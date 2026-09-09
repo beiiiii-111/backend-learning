@@ -1,6 +1,6 @@
-package top.yixz.quickstart.controller;
+package top.yixz.config.quickstart.controller;
 
-import top.yixz.quickstart.entity.User;
+import top.yixz.config.quickstart.entity.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

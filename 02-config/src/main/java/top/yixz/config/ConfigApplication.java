@@ -1,4 +1,4 @@
-package top.yixz.quickstart;
+package top.yixz.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,12 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author yxzhang
  * @date 2026/9/9
- * @description QuickStartApplication
+ * @description ConfigApplication
  **/
 @SpringBootApplication
-public class QuickStartApplication {
+public class ConfigApplication {
     public static void main(String[] args) {
-        SpringApplication.run(QuickStartApplication.class, args);
-        
+        SpringApplication.run(ConfigApplication.class,args);
     }
 }

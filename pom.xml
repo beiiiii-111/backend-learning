@@ -16,6 +16,7 @@
     <description>multi-module-project 多模块项目</description>
     <modules>
         <module>01-quickstart</module>
+        <module>02-config</module>
     </modules>
 
     <properties>

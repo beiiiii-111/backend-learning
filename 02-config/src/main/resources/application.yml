@@ -1,0 +1,10 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: 02-配置管理
+
+yixz:
+  name: 张心怡
+  job: 学生

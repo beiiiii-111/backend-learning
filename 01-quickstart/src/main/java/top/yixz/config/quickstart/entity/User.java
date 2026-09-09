@@ -1,4 +1,4 @@
-package top.yixz.quickstart.entity;
+package top.yixz.config.quickstart.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
