@@ -16,17 +16,18 @@
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../tools/maven_jar/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
+        <module name="14-deploy" />
+        <module name="02-config" />
+        <module name="12-test" />
+        <module name="10-file" />
+        <module name="11-doc" />
         <module name="04-web" />
         <module name="09-security" />
         <module name="05-mybatis" />
         <module name="07-mq" />
         <module name="03-logging" />
-        <module name="02-config" />
-        <module name="12-test" />
         <module name="06-redis" />
         <module name="08-schedule" />
-        <module name="10-file" />
-        <module name="11-doc" />
         <module name="13-actuator" />
       </profile>
     </annotationProcessing>
@@ -46,6 +47,7 @@
       <module name="11-doc" options="-parameters" />
       <module name="12-test" options="-parameters" />
       <module name="13-actuator" options="-parameters" />
+      <module name="14-deploy" options="-parameters" />
       <module name="multi-module-project" options="-parameters" />
     </option>
   </component>
