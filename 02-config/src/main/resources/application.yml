@@ -4,14 +4,17 @@ server:
 spring:
   application:
     name: 02-配置管理
-profiles:
-  active: dev
+  profiles:
+    active: dev
 
 app:
   name: 配置管理模块
   author: ${yixz.name}
   port: 9090
   max-count: 100
+  email: 526663859@qq.com
+  phone: 15478209811
+  start-time: 2026-09-16T13:00:00
 
 yixz:
   name: 张心怡
