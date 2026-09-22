@@ -13,6 +13,7 @@
 | 05 | [计算属性与动态样式](./05-props-style.md) | 下标驱动轮播、动态 class/style、`color-mix()` |
 | 06 | [插槽与主题切换](./06-slot-theme.md) | `<slot />`、`:deep()`、CSS 变量驱动整体换色 |
 | 07 | [用 VitePress 搭建本笔记站](./07-vitepress-site.md) | Markdown 变网页 + GitHub Actions 自动部署 |
+| 08 | [条件渲染：学生名单多视图](./08-student-multi-view.md) | 一份数据四种展示，`v-if / v-else-if / v-else` 分支链 |
 
 ## 代码仓库
 

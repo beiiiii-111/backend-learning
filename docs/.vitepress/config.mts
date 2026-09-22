@@ -52,6 +52,16 @@ export default defineConfig({
           ]
         },
         {
+          text: '综合练习',
+          collapsed: false,
+          items: [
+            {
+              text: '08 · 条件渲染：学生名单多视图',
+              link: '/frontend/08-student-multi-view'
+            }
+          ]
+        },
+        {
           text: '工程化',
           collapsed: false,
           items: [
