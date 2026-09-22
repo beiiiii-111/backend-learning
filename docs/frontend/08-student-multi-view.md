@@ -2,7 +2,7 @@
 
 > - 难度：入门
 > - 前置：[03 · Vue 基础指令合集](./03-vue-directives.md)
-> - 预计时长：约 45 分钟
+> - 预计时长：约 60 分钟
 > - 对应代码：[Student.vue](https://github.com/beiiiii-111/frontend-learning/blob/main/03-vue-basic/vue-basic-demo/src/components/Student.vue)
 
 ## 1. 本节导读
@@ -25,6 +25,8 @@ Vue 基础 · 条件渲染综合练习。**一份数据，多种显示方式**�
 - 名单模式：一行一人，紧凑排列，人多了也能快速扫读
 - **切换视图不影响数据本身，只改变显示方式**
 
+另外把两个延伸练习也一起做了：**「只看及格」开关**（`el-switch` + `ref`）和**「查看详情」对话框**（`el-dialog` + `ref`），见 4.9 和 4.10。
+
 ---
 
 ## 2. 前置知识与边界
@@ -39,7 +41,7 @@ Vue 基础 · 条件渲染综合练习。**一份数据，多种显示方式**�
 | 动态绑定 `:style`、`:class` | |
 | Element Plus 组件标签用法 | |
 
-这一版只做视图切换，不做搜索和数据筛选。等学完 `computed` 之后再回来加搜索，能把「输入框内容一变，列表就跟着变」写得省事得多，也更容易看出计算属性和普通函数的区别。
+这一版不做搜索。等学完 `computed` 之后再回来加搜索框，能把「输入框内容一变，列表就跟着变」写得省事得多，也更容易看出计算属性和普通函数的区别。
 
 ---
 
@@ -72,7 +74,7 @@ Vue 基础 · 条件渲染综合练习。**一份数据，多种显示方式**�
 
 ### 4.1 准备数据数组
 
-数据从头到尾不会被修改，所以**用普通数组就够了，不需要 `ref`**。需要响应式的，是「当前看哪个视图」这类会变的东西。
+原始的学生数组从头到尾不会被修改，所以**用普通数组就够了**。会变的另立门户，见后面几步。
 
 ```js
 // 这份数据不会被修改，普通数组即可
@@ -89,22 +91,30 @@ const students = [
 ]
 ```
 
-### 4.2 定义一个会变的状态
+### 4.2 定义会变的状态
 
-整个页面只有一处会变：当前看哪个视图。它用一个字符串记录，所有视图都从它派生。
+页面上会变的东西一共三处，各占一个 `ref`：
+
+| ref | 含义 | 谁改它 |
+| --- | --- | --- |
+| `viewMode` | 当前看哪个视图：`table / card / group / list` | 点按钮（`v-model`） |
+| `onlyPass` | 是否只看及格 | 拨开关（`v-model`） |
+| `dialogVisible` | 详情对话框开还是关 | 点「查看」/「知道了」 |
 
 ```js
-const viewMode = ref("table")   // 当前视图：table / card / group / list
+const viewMode = ref("table");
+const onlyPass = ref(false);
+const dialogVisible = ref(false);
 ```
 
-思路是：**数据是死的，视图是活的**。把「活」的部分放到一个 `ref` 里，切换视图就只是改一个字符串，和数据处理完全分开，后面要加功能也不会互相牵扯。
+思路是：**数据是死的，视图是活的**。把「活」的部分各自放进一个 `ref`，切换就只是改一个字符串或布尔值，和数据处理完全分开，后面要加功能也不会互相牵扯。
 
 ### 4.3 先搭条件渲染骨架，再往里填内容
 
 先把几种情况按顺序排成一列，用最少的标签占位，确认切换逻辑对了，再逐个把具体组件填进去：
 
 ```html
-<el-table v-if="viewMode === 'table'" :data="students">
+<el-table v-if="viewMode === 'table'" :data="displayStudents">
   <!-- 表格列 -->
 </el-table>
 
@@ -132,7 +142,7 @@ const viewMode = ref("table")   // 当前视图：table / card / group / list
 能用 `prop` 直接显示的列就写 `prop`；需要加工的列（成绩带颜色、状态变标签、加操作按钮）用默认插槽，通过 `scope.row` 拿到当前行的数据。
 
 ```html
-<el-table v-if="viewMode === 'table'" :data="students" stripe border>
+<el-table v-if="viewMode === 'table'" :data="displayStudents" stripe border>
   <el-table-column prop="id" label="学号" width="120" />
   <el-table-column prop="name" label="姓名" width="110" />
   <el-table-column prop="className" label="班级" width="120" />
@@ -156,7 +166,7 @@ const viewMode = ref("table")   // 当前视图：table / card / group / list
 </el-table>
 ```
 
-注意 `:data="students"`：**表格自己会遍历数组，不需要再写 `v-for`**。这是组件和原生标签的一个区别。
+注意 `:data="displayStudents"`：**表格自己会遍历数组，不需要再写 `v-for`**。这是组件和原生标签的一个区别。这里传的是「显示用的数组」而不是原始数组，原因见 4.9。
 
 ### 4.5 填卡片视图
 
@@ -164,7 +174,7 @@ const viewMode = ref("table")   // 当前视图：table / card / group / list
 
 ```html
 <el-row v-else-if="viewMode === 'card'" :gutter="16">
-  <el-col v-for="item in students" :key="item.id" :xs="24" :sm="12" :md="8">
+  <el-col v-for="item in displayStudents" :key="item.id" :xs="24" :sm="12" :md="8">
     <el-card shadow="hover">
       <div class="stu-card__top">
         <el-avatar :size="48">{{ item.name.charAt(0) }}</el-avatar>
@@ -184,43 +194,46 @@ const viewMode = ref("table")   // 当前视图：table / card / group / list
 
 ### 4.6 填专业分组视图（在判断链上加一个 `v-else-if`）
 
-分组这件事本身不需要 `computed`，因为分组结果也是死的。用最普通的 `for` 循环先把人归好堆，模板里两层 `v-for` 直接渲染：
+把人按方向归类这件事抽成一个函数，传进去一份名单、还你一组分组结果。只用最普通的 `for` 循环，不用 `filter` / `reduce`：
 
 ```js
-// 分组结果同样不会变，还是普通数组；只用 for 循环，不用 filter / reduce
 const DIRECTIONS = ["前端开发", "后端开发", "数据开发", "测试开发"];
 
-const groupedStudents = [];
-for (const direction of DIRECTIONS) {
-  const members = [];
-  for (const item of students) {
-    if (item.direction === direction) members.push(item);
+function buildGroups(list) {
+  const groups = [];
+  for (const direction of DIRECTIONS) {
+    const members = [];
+    for (const item of list) {
+      if (item.direction === direction) members.push(item);
+    }
+    groups.push({ direction, members });
   }
-  groupedStudents.push({ direction, members });
+  return groups;
 }
 ```
 
+模板里两层循环渲染，**外层循环「分组」、内层循环「组内成员」，两层都要给 `:key`**：外层用方向名（唯一），内层用学号。没有人的方向直接不显示——注意 `v-for` 和 `v-if` 不放在同一个元素上，用 `<template>` 包一层：
+
 ```html
 <div v-else-if="viewMode === 'group'">
-  <section v-for="group in groupedStudents" :key="group.direction">
-    <h3>{{ group.direction }} <span>{{ group.members.length }} 人</span></h3>
+  <template v-for="group in groupedStudents" :key="group.direction">
+    <section v-if="group.members.length">
+      <h3>{{ group.direction }} <span>{{ group.members.length }} 人</span></h3>
 
-    <ul>
-      <li v-for="item in group.members" :key="item.id">
-        <el-avatar :size="32">{{ item.name.charAt(0) }}</el-avatar>
-        <span>{{ item.name }}</span>
-        <span>{{ item.id }} · {{ item.className }}</span>
-        <span :style="{ color: scoreColor(item.score) }">{{ item.score }}</span>
-        <el-tag size="small" :type="STATUS_MAP[item.status].type" effect="light">
-          {{ STATUS_MAP[item.status].text }}
-        </el-tag>
-      </li>
-    </ul>
-  </section>
+      <ul>
+        <li v-for="item in group.members" :key="item.id">
+          <el-avatar :size="32">{{ item.name.charAt(0) }}</el-avatar>
+          <span>{{ item.name }}</span>
+          <span :style="{ color: scoreColor(item.score) }">{{ item.score }}</span>
+          <el-tag size="small" :type="STATUS_MAP[item.status].type" effect="light">
+            {{ STATUS_MAP[item.status].text }}
+          </el-tag>
+        </li>
+      </ul>
+    </section>
+  </template>
 </div>
 ```
-
-外层 `v-for` 遍历「分组」，内层 `v-for` 遍历「组内成员」，两层都要给 `:key`：外层用方向名（唯一），内层用学号。
 
 ### 4.7 填名单视图（`v-else` 兜底分支）
 
@@ -228,7 +241,7 @@ for (const direction of DIRECTIONS) {
 
 ```html
 <ul v-else class="name-list">
-  <li v-for="item in students" :key="item.id" class="name-list__item">
+  <li v-for="item in displayStudents" :key="item.id" class="name-list__item">
     <el-avatar :size="32">{{ item.name.charAt(0) }}</el-avatar>
     <span class="name-list__name">{{ item.name }}</span>
     <span class="name-list__meta">{{ item.id }} · {{ item.className }} · {{ item.direction }}</span>
@@ -242,7 +255,7 @@ for (const direction of DIRECTIONS) {
 
 ### 4.8 收尾：抽公共函数、显示人数
 
-根据成绩「上色」这件事，在几个视图里都要用，所以抽成函数放在 `script` 里共用，模板只管调用：
+根据成绩「上色」这件事，在几个视图和对话框里都要用，所以抽成函数放在 `script` 里共用，模板只管调用：
 
 ```js
 function scoreColor(score) {
@@ -252,13 +265,90 @@ function scoreColor(score) {
 }
 ```
 
-人数用数组自带的 `length` 属性，不需要额外定义变量：
+人数用数组自带的 `length` 属性，不需要额外定义变量。注意显示的是**当前显示中的人数**，拨了「只看及格」后数字会跟着变：
 
 ```html
 <p class="page__desc">
-  共 {{ students.length }} 人 · 切换视图用的是 v-if / v-else-if / v-else
+  共 {{ displayStudents.length }} 人 · 切换视图用的是 v-if / v-else-if / v-else
 </p>
 ```
+
+### 4.9 延伸练习：只看及格开关（`el-switch` + `ref`）
+
+关键决定：**原始数组 `students` 不动，另外准备一份「显示用的数组」`displayStudents`**。开关一拨，就把过滤后的新数组换上去，四个视图读的都是这份显示数组，所以全部跟着变。
+
+```js
+const onlyPass = ref(false);
+const displayStudents = ref([...students]);      // 显示用的数组，初始是全部
+const groupedStudents = ref(buildGroups(students)); // 分组结果也要跟着变，所以也是 ref
+
+function handlePassChange(passOnly) {
+  const list = [];
+  for (const item of students) {
+    if (!passOnly || item.score >= 60) list.push(item);
+  }
+  displayStudents.value = list;
+  groupedStudents.value = buildGroups(list);
+}
+```
+
+三个要点：
+
+- `displayStudents` 是 `ref`，所以重新赋值要写 `.value`；模板里用则不用加；
+- 过滤用最普通的 `for` 循环 + `push`（`filter` 还没学），`!passOnly || item.score >= 60` 一行同时表达「开关关着 → 全要，开关开着 → 只要及格的」；
+- 分组结果 `groupedStudents` 也要一起重建，否则分组视图显示的还是过滤前的人。
+
+```html
+<el-switch v-model="onlyPass" active-text="只看及格" @change="handlePassChange" />
+```
+
+`v-model` 负责把开关状态写进 `onlyPass`，`@change` 负责在状态变了之后重建显示数组——一个管「值」，一个管「反应」。
+
+### 4.10 延伸练习：查看详情对话框（`el-dialog` + `ref`）
+
+对话框需要两个 `ref`：一个存「当前选中的学生」，一个存「开还是关」。点「查看」时先记住是谁，再把开关拨到真：
+
+```js
+const currentStudent = ref(null);   // 当前选中的学生，没选时是 null
+const dialogVisible = ref(false);
+
+function showDetail(student) {
+  currentStudent.value = student;
+  dialogVisible.value = true;
+}
+```
+
+```html
+<el-dialog
+  v-model="dialogVisible"
+  :title="currentStudent ? currentStudent.name + ' · 详细信息' : '详细信息'"
+  width="420"
+>
+  <el-descriptions v-if="currentStudent" :column="1" border>
+    <el-descriptions-item label="学号">{{ currentStudent.id }}</el-descriptions-item>
+    <el-descriptions-item label="姓名">{{ currentStudent.name }}</el-descriptions-item>
+    <el-descriptions-item label="班级">{{ currentStudent.className }}</el-descriptions-item>
+    <el-descriptions-item label="方向">{{ currentStudent.direction }}</el-descriptions-item>
+    <el-descriptions-item label="成绩">
+      <span :style="{ color: scoreColor(currentStudent.score) }">{{ currentStudent.score }}</span>
+    </el-descriptions-item>
+    <el-descriptions-item label="状态">
+      <el-tag :type="STATUS_MAP[currentStudent.status].type" effect="light">
+        {{ STATUS_MAP[currentStudent.status].text }}
+      </el-tag>
+    </el-descriptions-item>
+  </el-descriptions>
+
+  <template #footer>
+    <el-button type="primary" @click="dialogVisible = false">知道了</el-button>
+  </template>
+</el-dialog>
+```
+
+两个细节：
+
+- `v-if="currentStudent"` 兜住「还没选人就渲染对话框」的空档，否则模板里 `currentStudent.id` 会因为 `null` 报错；
+- 对话框放在视图判断链**外面**——它不属于任何一种视图，无论当前是表格还是名单，点「查看」都要能弹出来。
 
 ---
 
@@ -302,7 +392,7 @@ function scoreColor(score) {
 
 ## 7. 容易写错的地方
 
-### 坑 1：加了分支却忘了改条件（本次真实踩到）
+### 坑 1：加了分支却忘了改条件（真实踩到）
 
 复制「卡片」那一整块出来改成分组视图，却忘了把 `v-else-if="viewMode === 'card'"` 改成 `'group'`。结果是：**专业分组按钮永远点不出分组视图**，页面看起来和卡片模式一模一样，控制台还不报错——因为语法完全合法，只是条件永远不成立。
 
@@ -312,14 +402,19 @@ function scoreColor(score) {
 
 写组件样式时 `<style>` 要加 `scoped`，否则里面的选择器会作用到整个页面。裸标签选择器最容易出事，例如某个组件里写了 `p { width: 200px; height: 80px; line-height: 80px }`，看起来只想管自己那两个 `<p>`，实际会把页面里所有段落都改成宽 200px、行高 80px。**别的组件即使没被渲染，它的样式也会被打包并生效。**
 
+### 坑 3：过滤后忘了同步重建派生数据
+
+「只看及格」只换 `displayStudents` 不重建 `groupedStudents` 的话，四个视图里三个对了，分组视图里还是全部的人——因为它是从旧数组算出来的。**派生数据要跟着源数据一起重建。**
+
 ### 其余容易漏的点
 
 | 类别 | 注意点 |
 | --- | --- |
 | 模板 | `v-else` 必须紧跟 `v-if`；互斥分支用 `v-else-if`，别写成多个独立 `v-if`；顺序即优先级，从特殊到一般 |
-| 数据 | 不会被改的数据不用 `ref`，会变的（视图模式）才用；`:key` 用学号这类唯一值 |
+| 数据 | 不会被改的数据不用 `ref`，会变的（视图模式、开关、选中学生）才用；`:key` 用学号这类唯一值 |
 | 组件 | `el-table` 自己遍历数据，不再写 `v-for`；自定义列用 `scope.row` 取当前行；`el-radio-button` 用 `value` 传值 |
-| 分组 | 两层 `v-for` 都要给 `:key`：外层用方向名，内层用学号 |
+| 分组 | 两层 `v-for` 都要给 `:key`：外层用方向名，内层用学号；`v-for` 和 `v-if` 别放同一个元素，用 `<template>` 包一层 |
+| 对话框 | 内容区记得 `v-if="currentStudent"` 防空；`el-dialog` 放在视图判断链外面 |
 
 ---
 
@@ -332,15 +427,19 @@ function scoreColor(score) {
 - [x] 专业分组模式：同一方向的人归到一起，标题显示该方向人数
 - [x] 名单模式：一行一人，鼠标移上去有高亮反馈
 - [x] 状态标签类型正确，在读绿、实习中橙、休学灰
+- [x] 拨「只看及格」后：人数变 7、表格/卡片/名单/分组同步少掉不及格的人，再拨回来全部恢复
+- [x] 点「查看 / 查看详情」弹出对话框，完整信息正确；「知道了」可关闭
 
 ---
 
 ## 9. 延伸练习
 
+已完成的两个：**按专业方向分组**（4.6）、**只看及格开关**（4.9）、**查看详情对话框**（4.10）。
+
+剩下留给以后的：
+
 | 题目 | 要改的地方 | 难度 |
 | --- | --- | --- |
-| 加「只看及格」开关 | `el-switch` + 一个 `ref`，再改成对应的数据数组 | 较易 |
-| 点「查看详情」弹出对话框展示完整信息 | `el-dialog` + 一个 `ref` 保存选中的学生 | 中等 |
 | 加搜索框，按姓名过滤（等学过 `computed` 再做） | 新增关键字 `ref` 和筛选逻辑，注意关键字清空时要恢复全部 | 中等 |
 | 把各个视图拆成子组件 | 需要先学 `props` 与组件通信 | 较难 |
 
@@ -349,8 +448,9 @@ function scoreColor(score) {
 ## 10. 本节小结
 
 - 一份数据多种展示，关键是把「当前视图」抽成一个 `ref`，模板用 `v-if / v-else-if / v-else` 链去分派；
-- 不变的用普通数组，会变的才用 `ref`；字典把「事实」和「文案样式」分开维护；
+- 原始数据保持只读，「显示用的数据」（过滤结果、分组结果）单独用 `ref` 存，变了就整份换新；
 - `el-table` 自带遍历不需要 `v-for`，自己排的布局（卡片 / 分组 / 名单）才需要；
+- 对话框 = 一个 `ref` 存选中的对象 + 一个 `ref` 控制开关，内容区用 `v-if` 防空；
 - 复制分支改视图时，记得同步改它的判断条件。
 
 ---
@@ -358,12 +458,11 @@ function scoreColor(score) {
 ## 附录：Student.vue 完整代码
 
 <details>
-<summary>展开查看完整代码（约 370 行）</summary>
+<summary>展开查看完整代码</summary>
 
 ```vue
 <script setup>
 import { ref } from "vue";
-import { ElMessage } from "element-plus";
 
 // 一、数据源：学生数组。视图切换只改变怎么显示，不改变这份数据
 // 这份数据从头到尾不会被修改，所以用普通数组就够了，不用 ref
@@ -396,23 +495,46 @@ function scoreColor(score) {
 }
 
 // 五、专业分组：把同一方向的人归到一起。
-// 分组结果同样不会变，所以还是普通数组；这里只用最普通的 for 循环，
+// 分组结果跟着「只看及格」变，所以用 ref 包起来；归类只用最普通的 for 循环，
 // 不用还没学到的 filter / reduce，也不需要用 computed
 const DIRECTIONS = ["前端开发", "后端开发", "数据开发", "测试开发"];
 
-const groupedStudents = [];
-for (const direction of DIRECTIONS) {
-  const members = [];
-  for (const item of students) {
-    if (item.direction === direction) members.push(item);
+function buildGroups(list) {
+  const groups = [];
+  for (const direction of DIRECTIONS) {
+    const members = [];
+    for (const item of list) {
+      if (item.direction === direction) members.push(item);
+    }
+    groups.push({ direction, members });
   }
-  groupedStudents.push({ direction, members });
+  return groups;
 }
 
+// 六、延伸练习 1：只看及格开关。
+// 现在页面上有两处会变：当前视图 + 是否只看及格，各占一个 ref。
+// 显示用的数组单独用一个 ref 存，开关一拨就换成新的数组
+const onlyPass = ref(false);
+const displayStudents = ref([...students]);
+const groupedStudents = ref(buildGroups(students));
+
+function handlePassChange(passOnly) {
+  const list = [];
+  for (const item of students) {
+    if (!passOnly || item.score >= 60) list.push(item);
+  }
+  displayStudents.value = list;
+  groupedStudents.value = buildGroups(list);
+}
+
+// 七、延伸练习 2：查看详情对话框。
+// 一个 ref 存当前选中的学生，一个 ref 控制对话框开和关
+const currentStudent = ref(null);
+const dialogVisible = ref(false);
+
 function showDetail(student) {
-  ElMessage.success(
-    `${student.name}（${student.id}）：${student.direction}，成绩 ${student.score}`,
-  );
+  currentStudent.value = student;
+  dialogVisible.value = true;
 }
 </script>
 
@@ -422,23 +544,32 @@ function showDetail(student) {
       <div>
         <h2 class="page__title">学生名单</h2>
         <p class="page__desc">
-          共 {{ students.length }} 人 · 切换视图用的是 v-if / v-else-if / v-else
+          共 {{ displayStudents.length }} 人 · 切换视图用的是 v-if / v-else-if / v-else
         </p>
       </div>
 
-      <!-- 视图切换：viewMode 一变，模板自动在几个分支之间换 -->
-      <el-radio-group v-model="viewMode">
-        <el-radio-button value="table">表格</el-radio-button>
-        <el-radio-button value="card">卡片</el-radio-button>
-        <el-radio-button value="group">专业分组</el-radio-button>
-        <el-radio-button value="list">名单</el-radio-button>
-      </el-radio-group>
+      <div class="page__controls">
+        <!-- 视图切换：viewMode 一变，模板自动在几个分支之间换 -->
+        <el-radio-group v-model="viewMode">
+          <el-radio-button value="table">表格</el-radio-button>
+          <el-radio-button value="card">卡片</el-radio-button>
+          <el-radio-button value="group">专业分组</el-radio-button>
+          <el-radio-button value="list">名单</el-radio-button>
+        </el-radio-group>
+
+        <!-- 延伸练习：只看及格。开关一拨，handlePassChange 换一个新的显示数组 -->
+        <el-switch
+          v-model="onlyPass"
+          active-text="只看及格"
+          @change="handlePassChange"
+        />
+      </div>
     </header>
 
     <!-- ===== 条件渲染：下面四块同一时间只会出现一块 ===== -->
 
     <!-- 第一块：表格模式 -->
-    <el-table v-if="viewMode === 'table'" :data="students" stripe border>
+    <el-table v-if="viewMode === 'table'" :data="displayStudents" stripe border>
       <el-table-column prop="id" label="学号" width="120" />
       <el-table-column prop="name" label="姓名" width="110" />
       <el-table-column prop="className" label="班级" width="120" />
@@ -466,7 +597,7 @@ function showDetail(student) {
 
     <!-- 第二块：卡片模式 -->
     <el-row v-else-if="viewMode === 'card'" :gutter="16">
-      <el-col v-for="item in students" :key="item.id" :xs="24" :sm="12" :md="8" class="card-col">
+      <el-col v-for="item in displayStudents" :key="item.id" :xs="24" :sm="12" :md="8" class="card-col">
         <el-card shadow="hover" class="stu-card">
           <div class="stu-card__top">
             <el-avatar :size="48" class="avatar">{{ item.name.charAt(0) }}</el-avatar>
@@ -500,29 +631,32 @@ function showDetail(student) {
 
     <!-- 第三块：专业分组模式（延伸练习：在判断链上再加一个 v-else-if 分支） -->
     <div v-else-if="viewMode === 'group'" class="group-wrap">
-      <section v-for="group in groupedStudents" :key="group.direction" class="group">
-        <h3 class="group__title">
-          {{ group.direction }}
-          <span class="group__count">{{ group.members.length }} 人</span>
-        </h3>
+      <!-- 没有人的方向直接不显示：外层 template 负责循环，内层元素才放 v-if -->
+      <template v-for="group in groupedStudents" :key="group.direction">
+        <section v-if="group.members.length" class="group">
+          <h3 class="group__title">
+            {{ group.direction }}
+            <span class="group__count">{{ group.members.length }} 人</span>
+          </h3>
 
-        <ul class="group__list">
-          <li v-for="item in group.members" :key="item.id" class="group__item">
-            <el-avatar :size="32" class="avatar">{{ item.name.charAt(0) }}</el-avatar>
-            <span class="group__name">{{ item.name }}</span>
-            <span class="group__meta">{{ item.id }} · {{ item.className }}</span>
-            <span class="score" :style="{ color: scoreColor(item.score) }">{{ item.score }}</span>
-            <el-tag size="small" :type="STATUS_MAP[item.status].type" effect="light">
-              {{ STATUS_MAP[item.status].text }}
-            </el-tag>
-          </li>
-        </ul>
-      </section>
+          <ul class="group__list">
+            <li v-for="item in group.members" :key="item.id" class="group__item">
+              <el-avatar :size="32" class="avatar">{{ item.name.charAt(0) }}</el-avatar>
+              <span class="group__name">{{ item.name }}</span>
+              <span class="group__meta">{{ item.id }} · {{ item.className }}</span>
+              <span class="score" :style="{ color: scoreColor(item.score) }">{{ item.score }}</span>
+              <el-tag size="small" :type="STATUS_MAP[item.status].type" effect="light">
+                {{ STATUS_MAP[item.status].text }}
+              </el-tag>
+            </li>
+          </ul>
+        </section>
+      </template>
     </div>
 
     <!-- 第四块：名单模式，一行一人，人多了用这个（v-else 兜底，不写条件） -->
     <ul v-else class="name-list">
-      <li v-for="item in students" :key="item.id" class="name-list__item">
+      <li v-for="item in displayStudents" :key="item.id" class="name-list__item">
         <el-avatar :size="32" class="avatar">{{ item.name.charAt(0) }}</el-avatar>
         <span class="name-list__name">{{ item.name }}</span>
         <span class="name-list__meta">{{ item.id }} · {{ item.className }} · {{ item.direction }}</span>
@@ -532,8 +666,41 @@ function showDetail(student) {
         </el-tag>
       </li>
     </ul>
+
+    <!-- 延伸练习：查看详情对话框。dialogVisible 一变真就弹出 / 关闭 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="currentStudent ? currentStudent.name + ' · 详细信息' : '详细信息'"
+      width="420"
+    >
+      <el-descriptions v-if="currentStudent" :column="1" border>
+        <el-descriptions-item label="学号">{{ currentStudent.id }}</el-descriptions-item>
+        <el-descriptions-item label="姓名">{{ currentStudent.name }}</el-descriptions-item>
+        <el-descriptions-item label="班级">{{ currentStudent.className }}</el-descriptions-item>
+        <el-descriptions-item label="方向">{{ currentStudent.direction }}</el-descriptions-item>
+        <el-descriptions-item label="成绩">
+          <span class="score" :style="{ color: scoreColor(currentStudent.score) }">
+            {{ currentStudent.score }}
+          </span>
+        </el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="STATUS_MAP[currentStudent.status].type" effect="light">
+            {{ STATUS_MAP[currentStudent.status].text }}
+          </el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <template #footer>
+        <el-button type="primary" @click="dialogVisible = false">知道了</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
+
+<style scoped>
+/* 同组件文件，完整样式见源码：
+   https://github.com/beiiiii-111/frontend-learning/blob/main/03-vue-basic/vue-basic-demo/src/components/Student.vue */
+</style>
 ```
 
 </details>
