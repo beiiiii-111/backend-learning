@@ -17,9 +17,6 @@ import top.yixz.web.dto.UserCreateRequest;
 import top.yixz.web.dto.UserUpdateRequest;
 import top.yixz.web.entity.User;
 import top.yixz.web.service.UserService;
-import top.yixz.web.dto.UserCreateRequest;
-import top.yixz.web.dto.UserUpdateRequest;
-import top.yixz.web.service.UserService;
 
 /**
  * 用户接口
