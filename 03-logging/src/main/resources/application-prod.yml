@@ -1,0 +1,9 @@
+# 生产环境配置：启动时加 --spring.profiles.active=prod 生效
+# 日志行为由 logback-spring.xml 的 <springProfile name="prod"> 决定：
+# WARN 起步、只写 logs/app.log，控制台不再刷日志
+server:
+  port: 8001
+
+spring:
+  application:
+    name: 03-logging

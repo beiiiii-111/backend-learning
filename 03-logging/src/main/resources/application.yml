@@ -1,0 +1,30 @@
+server:
+  port: 8001
+
+spring:
+  application:
+    name: 03-logging
+
+  # 强制输出 ANSI 颜色（重定向到文件/管道时也保留，detect 会自动关掉）
+  output:
+    ansi:
+      enabled: always
+
+logging:
+  # 日志级别：root 全局 info，自己的包开到 debug 方便观察
+  level:
+    root: info
+    top.logging: debug
+
+  # 控制台输出格式（logback-spring.xml 里的 CONSOLE appender 会通过 springProperty 读这里）
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr([%thread]){yellow} %highlight(%-5level) %cyan(%logger{40}) [%X{traceId}] - %msg%n"
+
+  # 格式符	作用
+  # %d{...}	时间，{}里是格式
+  # %clr(...){颜色}	上色，{}可写前景色/背景色/样式，不写{颜色}时按级别自动上色
+  # %highlight(...)	按级别自动上色（WARN 黄、ERROR 红）
+  # %-5level	级别，-5 表示左对齐占 5 位（改这个数字调宽度）
+  # %logger{40}	类名，{40} 是最大长度，超了会缩写成 t.l.Controller 这种
+  # [%X{traceId}]	从 MDC 取 traceId，同一次请求的所有日志串成一条线
+  # %msg%n	内容 + 换行
