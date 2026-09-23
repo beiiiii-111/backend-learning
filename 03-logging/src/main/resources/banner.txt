@@ -1,4 +1,4 @@
-${AnsiColor.BRIGHT_GREEN}${AnsiStyle.BOLD}
+${AnsiColor.BRIGHT_BLUE}${AnsiStyle.BOLD}
  _     ___   ____  ____ ___ _   _  ____ 
 | |   / _ \ / ___|/ ___|_ _| \ | |/ ___|
 | |  | | | | |  _| |  _ | ||  \| | |  _ 
