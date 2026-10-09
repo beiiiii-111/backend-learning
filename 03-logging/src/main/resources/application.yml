@@ -17,8 +17,8 @@ logging:
     top.logging: debug
 
   # 控制台输出格式（logback-spring.xml 里的 CONSOLE appender 会通过 springProperty 读这里）
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr([%thread]){yellow} %highlight(%-5level) %cyan(%logger{40}) [%X{traceId}] - %msg%n"
+  #pattern:
+    #console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr([%thread]){yellow} %highlight(%-5level) %cyan(%logger{40}) [%X{traceId}] - %msg%n"
 
   # 格式符	作用
   # %d{...}	时间，{}里是格式
