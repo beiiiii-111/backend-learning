@@ -29,6 +29,7 @@
         <module>12-test</module>
         <module>13-actuator</module>
         <module>14-deploy</module>
+        <module>my-vue-app</module>
     </modules>
 
     <properties>

@@ -17,6 +17,7 @@
           <entry name="$PROJECT_DIR$/../tools/maven_jar/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
         <module name="14-deploy" />
+        <module name="my-vue-app" />
         <module name="02-config" />
         <module name="12-test" />
         <module name="10-file" />
@@ -49,6 +50,7 @@
       <module name="13-actuator" options="-parameters" />
       <module name="14-deploy" options="-parameters" />
       <module name="multi-module-project" options="-parameters" />
+      <module name="my-vue-app" options="-parameters" />
     </option>
   </component>
 </project>

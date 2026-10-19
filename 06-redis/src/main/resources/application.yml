@@ -1,0 +1,44 @@
+server:
+  port: 8006
+
+spring:
+  application:
+    name: 06-redis 缓存模块
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 10    # 这里配置了 DB10，默认为 DB0
+      timeout: 3s
+      # Lettuce 默认多条命令复用同一个连接，池化后按连接池取用
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 1s
+
+yixz:
+  # token 的签名密钥，生产环境从环境变量注入，不要写死在仓库里
+  jwt:
+    secret: sms-login-demo-secret-key-please-replace-in-production-2026
+    expire-seconds: 7200
+  sms:
+    # true 时不调用短信 SDK，验证码只写日志与 Redis，方便本地调试
+    mock-enabled: false
+    # 验证码有效期（秒）
+    code-expire-seconds: 300
+    # 同一个手机号两次发送的最小间隔（秒），前端倒计时用同一个数字
+    send-interval-seconds: 60
+    # 同一个手机号一天最多发多少条
+    send-daily-limit: 10
+    # 同一个验证码最多允许输错几次
+    max-fail-count: 5
+    # 容联云（云通讯）短信配置，对应 top.yixz.redis.config.CloopenConfig
+    ccp:
+      serverIp: app.cloopen.com
+      port: "8883"
+      accountSID: 2c94811c9f3cb45601a1380502bc6255
+      accountToken: 89bf38a93bca499dab48b7bc7c57700e
+      appId: 2c94811c9f3cb45601a138050331625c   # 原值末尾跟着“未上线”三个字，会验签失败，已去掉
+      templateId: "1"

@@ -30,3 +30,6 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/.vitepress/.temp/
 .vitepress/cache/
+
+# 前端工程 my-vue-app 的打包产物
+my-vue-app/dist/
