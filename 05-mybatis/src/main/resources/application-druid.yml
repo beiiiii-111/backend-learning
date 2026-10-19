@@ -1,0 +1,27 @@
+# 课后进阶 2：Druid 数据源 + 监控页配置
+# 启动方式：
+#   HikariCP（默认）：mvn -pl 05-mybatis spring-boot:run
+#   Druid：          mvn -pl 05-mybatis -Pdruid spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=druid"
+# 监控页：http://localhost:8005/druid/  账号 admin / admin
+spring:
+  datasource:
+    # 覆盖默认的 HikariCP
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 2              # 启动时预建连接数
+      min-idle: 2                  # 最小空闲，对应 Hikari 的 minimum-idle
+      max-active: 10               # 池上限，对应 Hikari 的 maximum-pool-size
+      max-wait: 3000               # 取连接超时，对应 Hikari 的 connection-timeout
+      validation-query: SELECT 1
+      test-while-idle: true
+      # SQL 统计，监控页的 "SQL 监控" / "连接池" 数据都靠它
+      filter:
+        stat:
+          enabled: true
+          slow-sql-millis: 1000    # 超过 1 秒记为慢 SQL
+          log-slow-sql: true
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: admin
+        login-password: admin
