@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>仓库 Git 地图 · frontend-learning</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#fff; --text:#1f2328; --muted:#68707a;
+    --line:#e3e6ea; --line2:#eef0f3; --code:#f2f4f7;
+    --feat:#2563eb; --docs:#7c3aed; --refactor:#ea580c; --chore:#64748b;
+    --ok:#16a34a; --warn:#d97706;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 16px -8px rgba(16,24,40,.10);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#15171b; --panel:#1d2025; --text:#e7e9ec; --muted:#98a0aa;
+      --line:#2c3037; --line2:#24272d; --code:#23262c;
+      --feat:#6d9dff; --docs:#a78bfa; --refactor:#fb923c; --chore:#94a3b8;
+      --ok:#4ade80; --warn:#fbbf24;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px -10px rgba(0,0,0,.6);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 24px 80px}
+
+  /* ---------- 头部 ---------- */
+  header{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:28px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  h1{margin:0 0 10px;font-size:30px;letter-spacing:-.01em;font-weight:700}
+  .repo-line{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;color:var(--muted);font-size:13.5px}
+  .repo-line b{color:var(--text);font-weight:600}
+  .brand{display:inline-flex;align-items:center;gap:6px}
+
+  /* ---------- 通用卡片 ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  h2{font-size:17px;margin:44px 0 6px;font-weight:650}
+  h2 .n{color:var(--muted);font-weight:500;margin-right:8px;font-size:14px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+
+  /* ---------- 概览数字 ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px}
+  .stat{padding:14px 16px}
+  .stat .k{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .stat .v{font-size:23px;font-weight:650;letter-spacing:-.01em}
+  .stat .v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+  .stat.alert{border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+  .stat.alert .v{color:var(--warn)}
+
+  /* ---------- 阶段轨道 ---------- */
+  .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:900px){.phases{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.phases{grid-template-columns:1fr}}
+  .phase{padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .phase-hd{padding:13px 15px 11px;border-bottom:1px solid var(--line2)}
+  .phase-hd .p{font-size:11.5px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  .phase-hd .t{font-size:15px;font-weight:650;margin-top:2px}
+  .phase-hd .m{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .phase-hd .m span{white-space:nowrap}
+  .phase-body{padding:12px 15px 16px;position:relative;flex:1}
+  .phase-body::before{content:"";position:absolute;left:24px;top:20px;bottom:20px;width:2px;background:var(--line2)}
+  .cl{position:relative;padding:7px 0 7px 26px}
+  .cl::before{content:"";position:absolute;left:2px;top:14px;width:9px;height:9px;border-radius:50%;
+    background:var(--panel);border:2.5px solid var(--c,var(--chore));z-index:1}
+  .cl .h{font-size:11.5px;color:var(--muted)}
+  .cl .h b{color:var(--text);font-weight:600}
+  .cl .s{font-size:12.8px;line-height:1.5;margin-top:1px}
+  .cl .sz{font-size:11px;color:var(--muted);margin-top:2px}
+  .cl .sz i{font-style:normal;color:var(--ok)}
+  .cl .sz u{text-decoration:none;color:var(--refactor)}
+
+  /* ---------- 表格 ---------- */
+  .tbl-wrap{overflow-x:auto;border-radius:12px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px}
+  th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);letter-spacing:.04em;
+     padding:11px 12px;border-bottom:1px solid var(--line);background:var(--panel);white-space:nowrap;
+     position:sticky;top:0}
+  td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  tr:hover td{background:color-mix(in srgb,var(--text) 3%,transparent)}
+  .hash{font-size:12.5px;color:var(--muted)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11.5px;font-weight:600;
+       border:1px solid currentColor;line-height:1.6}
+  .t-feat{color:var(--feat)} .t-docs{color:var(--docs)}
+  .t-refactor{color:var(--refactor)} .t-chore{color:var(--chore)}
+  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .add{color:var(--ok)} .del{color:var(--refactor)}
+  .dirs{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- 规模条 ---------- */
+  .bars{padding:18px 20px 8px}
+  .bar{display:grid;grid-template-columns:74px 1fr 92px;gap:12px;align-items:center;
+       padding:5px 0;font-size:13px}
+  .bar .lab{font-size:12.5px;color:var(--muted)}
+  .bar .track{height:16px;background:var(--line2);border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:4px;background:var(--c,var(--chore));min-width:3px}
+  .bar .val{text-align:right;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .bar .val b{color:var(--text);font-weight:600}
+
+  /* ---------- 两栏 ---------- */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:820px){.two{grid-template-columns:1fr}}
+  .pad{padding:18px 20px}
+
+  /* 类型分布 */
+  .dist{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:6px 0 14px}
+  .dist i{display:block;height:100%}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .legend .n{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* 规范演变 */
+  .conv{border-left:3px solid var(--line);padding-left:14px;margin-bottom:16px}
+  .conv:last-child{margin-bottom:0}
+  .conv.now{border-left-color:var(--feat)}
+  .conv h4{margin:0 0 4px;font-size:13.5px;font-weight:650}
+  .conv .rng{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .conv code{display:block;background:var(--code);border-radius:6px;padding:8px 10px;
+    font-size:12.5px;line-height:1.9;white-space:pre-wrap;word-break:break-all;margin-bottom:6px}
+
+  /* 目录地图 */
+  .tree{padding:18px 20px;font-size:13.5px}
+  .row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;
+       padding:7px 0;border-bottom:1px solid var(--line2)}
+  .row:last-child{border-bottom:0}
+  .row .p{font-weight:550}
+  .row .p span{color:var(--muted);font-weight:400;font-size:12.5px;margin-left:8px}
+  .row .c{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .badge{font-size:11.5px;padding:1px 8px;border-radius:10px;white-space:nowrap;
+         border:1px solid currentColor}
+  .b-ok{color:var(--ok)} .b-wait{color:var(--muted)} .b-part{color:var(--warn)}
+
+  /* 里程碑 */
+  .ms{padding:6px 20px 16px}
+  .ms .item{display:grid;grid-template-columns:82px 1fr;gap:16px;padding:11px 0;
+            border-bottom:1px solid var(--line2)}
+  .ms .item:last-child{border-bottom:0}
+  .ms .when{font-size:12.5px;color:var(--muted)}
+  .ms .what b{font-weight:650}
+  .ms .what p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+
+  /* 命令 */
+  pre.cmd{background:var(--code);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;font-size:12.8px;line-height:1.85;overflow-x:auto;margin:0 0 12px}
+  pre.cmd .c{color:var(--muted)}
+  .graph{background:var(--code);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;font-size:12.6px;line-height:1.75;overflow-x:auto;margin:0}
+  .graph b{color:var(--feat);font-weight:600}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Git 地图</div>
+  <h1>frontend-learning</h1>
+  <div class="repo-line">
+    <span class="brand">远端 <b class="mono">origin</b> · <span class="mono">git@github.com:mqxu/frontend-learning.git</span></span>
+    <span>分支 <b class="mono">main</b> 与 <b class="mono">origin/main</b> 同步</span>
+    <span>作者 <b>mqxu</b></span>
+  </div>
+</header>
+
+<!-- ============ 1 概览 ============ -->
+<div class="stats">
+  <div class="card stat"><div class="k">提交数</div><div class="v">18</div></div>
+  <div class="card stat"><div class="k">分支 / 标签</div><div class="v">1<small>/ 0</small></div></div>
+  <div class="card stat"><div class="k">跟踪文件</div><div class="v">226</div></div>
+  <div class="card stat"><div class="k">累计变更行</div><div class="v"><span class="add">+110111</span><small><span class="del">−1276</span></small></div></div>
+  <div class="card stat"><div class="k">活跃跨度</div><div class="v">35<small>天</small></div></div>
+  <div class="card stat alert"><div class="k">工作区未提交</div><div class="v">2<small>个文件</small></div></div>
+</div>
+
+<!-- ============ 2 主干 ============ -->
+<h2><span class="n">01</span>主干：四个阶段</h2>
+<p class="sub">单分支线性历史，没有合并与分叉。按提交日期可切成四段，每段的提交习惯差别很明显。</p>
+
+<div class="phases">
+
+  <div class="card phase">
+    <div class="phase-hd">
+      <div class="p">阶段一 · 09-07</div>
+      <div class="t">仓库起步</div>
+      <div class="m"><span>6 次提交</span> · <span>+1698 行</span></div>
+    </div>
+    <div class="phase-body">
+      <div class="cl" style="--c:var(--docs)"><div class="h"><b>a6c9e7a</b> 15:40</div><div class="s">添加仓库 README</div><div class="sz"><i>+63</i></div></div>
+      <div class="cl" style="--c:var(--chore)"><div class="h"><b>caa565f</b> 15:49</div><div class="s">添加 .gitignore</div><div class="sz"><i>+2</i></div></div>
+      <div class="cl" style="--c:var(--chore)"><div class="h"><b>32dca8d</b> 16:26</div><div class="s">修改 .gitignore</div><div class="sz"><i>+18</i> <u>−2</u></div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>9af0799</b> 16:29</div><div class="s">01-vue-literal 字面量练习</div><div class="sz"><i>+34</i></div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>03f6123</b> 16:34</div><div class="s">02-vite-vue-demo 工程</div><div class="sz"><i>+1553</i> · 15 文件</div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>6ec961d</b> 16:35</div><div class="s">Vue 基础指令语法练习</div><div class="sz"><i>+28</i> <u>−9</u></div></div>
+    </div>
+  </div>
+
+  <div class="card phase">
+    <div class="phase-hd">
+      <div class="p">阶段二 · 09-14</div>
+      <div class="t">Vue 基础成型</div>
+      <div class="m"><span>1 次提交</span> · <span>+392 行</span></div>
+    </div>
+    <div class="phase-body">
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>4c63e5f</b> 17:04</div><div class="s">模版语法、插值、属性绑定、动态样式</div><div class="sz"><i>+392</i> · 12 文件</div></div>
+      <div style="padding:8px 0 0 26px;font-size:12.5px;color:var(--muted)">
+        03-vue-basic 工程在此建立，后续三周的练习都往里加。一次提交装完一周内容。
+      </div>
+    </div>
+  </div>
+
+  <div class="card phase">
+    <div class="phase-hd">
+      <div class="p">阶段三 · 09-21</div>
+      <div class="t">练习与文档堆积</div>
+      <div class="m"><span>7 次提交</span> · <span>+27777 行</span></div>
+    </div>
+    <div class="phase-body">
+      <div class="cl" style="--c:var(--chore)"><div class="h"><b>fcf45dc</b> 17:41</div><div class="s">忽略 .workbuddy 目录</div><div class="sz"><i>+3</i></div></div>
+      <div class="cl" style="--c:var(--chore)"><div class="h"><b>d95bac5</b> 17:41</div><div class="s">接入 Element Plus</div><div class="sz"><i>+1059</i> <u>−3</u></div></div>
+      <div class="cl" style="--c:var(--refactor)"><div class="h"><b>61a740f</b> 17:42</div><div class="s">组件迁入 src/views</div><div class="sz"><i>+55</i> <u>−36</u></div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>c328c85</b> 17:42</div><div class="s">学生名单多视图切换</div><div class="sz"><i>+332</i></div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>11af411</b> 17:42</div><div class="s">朋友圈图片布局</div><div class="sz"><i>+266</i></div></div>
+      <div class="cl" style="--c:var(--feat)"><div class="h"><b>ac482ed</b> 17:42</div><div class="s">13 个指令练习</div><div class="sz"><i>+21733</i> · 16 文件</div></div>
+      <div class="cl" style="--c:var(--docs)"><div class="h"><b>3d6204b</b> 17:42</div><div class="s">三份 Vue 基础教学文档</div><div class="sz"><i>+4329</i></div></div>
+      <div style="padding:8px 0 0 26px;font-size:12.5px;color:var(--muted)">
+        7 次提交集中在两分钟内批量推上去，提交信息从这个阶段开始带 scope。
+      </div>
+    </div>
+  </div>
+
+  <div class="card phase">
+    <div class="phase-hd">
+      <div class="p">阶段四 · 10-12</div>
+      <div class="t">结构重构与教程拆分</div>
+      <div class="m"><span>4 次提交</span> · <span>+80244 行</span></div>
+    </div>
+    <div class="phase-body">
+      <div class="cl" style="--c:var(--docs)"><div class="h"><b>ebad90c</b> 13:18</div><div class="s">重写 README，按 12 单元导航</div><div class="sz"><i>+96</i> <u>−47</u></div></div>
+      <div class="cl" style="--c:var(--refactor)"><div class="h"><b>fe8db56</b> 13:18</div><div class="s">建立课程目录骨架</div><div class="sz"><i>+927</i> · 23 文件</div></div>
+      <div class="cl" style="--c:var(--refactor)"><div class="h"><b>287afa5</b> 14:06</div><div class="s">旧目录按单元归位</div><div class="sz"><i>+1111</i> <u>−1174</u> · 58 文件</div></div>
+      <div class="cl" style="--c:var(--docs)"><div class="h"><b>5951397</b> 14:22</div><div class="s">152 篇配套教程拆分</div><div class="sz"><i>+78110</i> · 157 文件</div></div>
+      <div style="padding:8px 0 0 26px;font-size:12.5px;color:var(--muted)">
+        最后一次提交即当前 HEAD，与远端一致，没有未推送内容。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ 3 明细 ============ -->
+<h2><span class="n">02</span>提交明细</h2>
+<p class="sub">从旧到新。类型标签按约定色：<span class="tag t-feat">feat</span> 功能、<span class="tag t-docs">docs</span> 文档、<span class="tag t-refactor">refactor</span> 重构、<span class="tag t-chore">chore</span> 杂务。</p>
+
+<div class="card tbl-wrap">
+<table>
+<thead><tr>
+  <th>#</th><th>提交</th><th>日期</th><th>时间</th><th>类型</th><th>说明</th>
+  <th class="num">文件</th><th class="num">变更行</th><th>涉及目录</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td class="hash">a6c9e7a</td><td>09-07</td><td class="hash">15:40</td><td><span class="tag t-docs">docs</span></td><td>添加了前端工程化学习仓库的 README 文档</td><td class="num">1</td><td class="num"><span class="add">+63</span></td><td class="dirs">根目录</td></tr>
+<tr><td>2</td><td class="hash">caa565f</td><td>09-07</td><td class="hash">15:49</td><td><span class="tag t-chore">chore</span></td><td>添加了 .gitignore 配置</td><td class="num">1</td><td class="num"><span class="add">+2</span></td><td class="dirs">根目录</td></tr>
+<tr><td>3</td><td class="hash">32dca8d</td><td>09-07</td><td class="hash">16:26</td><td><span class="tag t-chore">chore</span></td><td>修改了 .gitignore 配置</td><td class="num">1</td><td class="num"><span class="add">+18</span> <span class="del">−2</span></td><td class="dirs">根目录</td></tr>
+<tr><td>4</td><td class="hash">9af0799</td><td>09-07</td><td class="hash">16:29</td><td><span class="tag t-feat">feat</span></td><td>新增 01-vue-literal 字面量练习案例</td><td class="num">1</td><td class="num"><span class="add">+34</span></td><td class="dirs">01-vue-literal</td></tr>
+<tr><td>5</td><td class="hash">03f6123</td><td>09-07</td><td class="hash">16:34</td><td><span class="tag t-feat">feat</span></td><td>02-vite-vue-demo vite 创建 vue3 项目</td><td class="num">15</td><td class="num"><span class="add">+1553</span></td><td class="dirs">02-vite-vue-demo</td></tr>
+<tr><td>6</td><td class="hash">6ec961d</td><td>09-07</td><td class="hash">16:35</td><td><span class="tag t-feat">feat</span></td><td>练习 vue 基础指令语法</td><td class="num">1</td><td class="num"><span class="add">+28</span> <span class="del">−9</span></td><td class="dirs">02-vite-vue-demo</td></tr>
+<tr><td>7</td><td class="hash">4c63e5f</td><td>09-14</td><td class="hash">17:04</td><td><span class="tag t-feat">feat</span></td><td>Vue 模版语法、插值、属性绑定、动态样式等</td><td class="num">12</td><td class="num"><span class="add">+392</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>8</td><td class="hash">fcf45dc</td><td>09-21</td><td class="hash">17:41</td><td><span class="tag t-chore">chore</span></td><td>chore(git) 忽略 .workbuddy 本地工作数据目录</td><td class="num">1</td><td class="num"><span class="add">+3</span></td><td class="dirs">根目录</td></tr>
+<tr><td>9</td><td class="hash">d95bac5</td><td>09-21</td><td class="hash">17:41</td><td><span class="tag t-chore">chore</span></td><td>chore(deps) 接入 Element Plus 组件库</td><td class="num">3</td><td class="num"><span class="add">+1059</span> <span class="del">−3</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>10</td><td class="hash">61a740f</td><td>09-21</td><td class="hash">17:42</td><td><span class="tag t-refactor">refactor</span></td><td>refactor(views) 视图组件统一迁入 src/views</td><td class="num">5</td><td class="num"><span class="add">+55</span> <span class="del">−36</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>11</td><td class="hash">c328c85</td><td>09-21</td><td class="hash">17:42</td><td><span class="tag t-feat">feat</span></td><td>feat(practice) 新增学生名单多视图切换练习</td><td class="num">1</td><td class="num"><span class="add">+332</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>12</td><td class="hash">11af411</td><td>09-21</td><td class="hash">17:42</td><td><span class="tag t-feat">feat</span></td><td>feat(practice) 新增朋友圈图片布局练习</td><td class="num">1</td><td class="num"><span class="add">+266</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>13</td><td class="hash">ac482ed</td><td>09-21</td><td class="hash">17:42</td><td><span class="tag t-feat">feat</span></td><td>feat(practice) 新增 13 个 Vue 常用指令的实用练习</td><td class="num">16</td><td class="num"><span class="add">+21733</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>14</td><td class="hash">3d6204b</td><td>09-21</td><td class="hash">17:42</td><td><span class="tag t-docs">docs</span></td><td>新增三份 Vue 基础教学文档</td><td class="num">3</td><td class="num"><span class="add">+4329</span></td><td class="dirs">03-vue-basic</td></tr>
+<tr><td>15</td><td class="hash">ebad90c</td><td>10-12</td><td class="hash">13:18</td><td><span class="tag t-docs">docs</span></td><td>docs(repo) 重写仓库说明，按课程 12 单元组织导航</td><td class="num">1</td><td class="num"><span class="add">+96</span> <span class="del">−47</span></td><td class="dirs">根目录</td></tr>
+<tr><td>16</td><td class="hash">fe8db56</td><td>10-12</td><td class="hash">13:18</td><td><span class="tag t-refactor">refactor</span></td><td>refactor(repo) 按课程 12 单元建立目录骨架</td><td class="num">23</td><td class="num"><span class="add">+927</span> <span class="del">−4</span></td><td class="dirs">module-01…04、cases、docs 等 11 个</td></tr>
+<tr><td>17</td><td class="hash">287afa5</td><td>10-12</td><td class="hash">14:06</td><td><span class="tag t-refactor">refactor</span></td><td>refactor(repo) 课程学习仓库重构</td><td class="num">58</td><td class="num"><span class="add">+1111</span> <span class="del">−1174</span></td><td class="dirs">03-vue-basic → module-02 等</td></tr>
+<tr><td>18</td><td class="hash">5951397</td><td>10-12</td><td class="hash">14:22</td><td><span class="tag t-docs">docs</span></td><td>docs(tutorial) 补齐 152 篇配套教程并按课程结构编号</td><td class="num">157</td><td class="num"><span class="add">+78110</span> <span class="del">−1</span></td><td class="dirs">docs、根目录</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ============ 4 规模 ============ -->
+<h2><span class="n">03</span>单次提交规模</h2>
+<p class="sub">横条按新增行数取对数绘制，否则后两次提交会把其余全部压成一条线。18 次提交合计新增 110111 行，其中 71% 来自最后一次。</p>
+
+<div class="card bars">
+  <div class="bar" style="--c:var(--docs)"><div class="lab mono">5951397</div><div class="track"><div class="fill" style="width:100%"></div></div><div class="val"><b>78110</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">ac482ed</div><div class="track"><div class="fill" style="width:88.6%"></div></div><div class="val"><b>21733</b> 行</div></div>
+  <div class="bar" style="--c:var(--docs)"><div class="lab mono">3d6204b</div><div class="track"><div class="fill" style="width:74.3%"></div></div><div class="val"><b>4329</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">03f6123</div><div class="track"><div class="fill" style="width:65.2%"></div></div><div class="val"><b>1553</b> 行</div></div>
+  <div class="bar" style="--c:var(--refactor)"><div class="lab mono">287afa5</div><div class="track"><div class="fill" style="width:62.3%"></div></div><div class="val"><b>1111</b> 行</div></div>
+  <div class="bar" style="--c:var(--chore)"><div class="lab mono">d95bac5</div><div class="track"><div class="fill" style="width:61.8%"></div></div><div class="val"><b>1059</b> 行</div></div>
+  <div class="bar" style="--c:var(--refactor)"><div class="lab mono">fe8db56</div><div class="track"><div class="fill" style="width:60.7%"></div></div><div class="val"><b>927</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">4c63e5f</div><div class="track"><div class="fill" style="width:53.0%"></div></div><div class="val"><b>392</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">c328c85</div><div class="track"><div class="fill" style="width:51.6%"></div></div><div class="val"><b>332</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">11af411</div><div class="track"><div class="fill" style="width:49.6%"></div></div><div class="val"><b>266</b> 行</div></div>
+  <div class="bar" style="--c:var(--docs)"><div class="lab mono">ebad90c</div><div class="track"><div class="fill" style="width:40.6%"></div></div><div class="val"><b>96</b> 行</div></div>
+  <div class="bar" style="--c:var(--docs)"><div class="lab mono">a6c9e7a</div><div class="track"><div class="fill" style="width:36.9%"></div></div><div class="val"><b>63</b> 行</div></div>
+  <div class="bar" style="--c:var(--refactor)"><div class="lab mono">61a740f</div><div class="track"><div class="fill" style="width:35.7%"></div></div><div class="val"><b>55</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">9af0799</div><div class="track"><div class="fill" style="width:31.6%"></div></div><div class="val"><b>34</b> 行</div></div>
+  <div class="bar" style="--c:var(--feat)"><div class="lab mono">6ec961d</div><div class="track"><div class="fill" style="width:29.9%"></div></div><div class="val"><b>28</b> 行</div></div>
+  <div class="bar" style="--c:var(--chore)"><div class="lab mono">32dca8d</div><div class="track"><div class="fill" style="width:26.1%"></div></div><div class="val"><b>18</b> 行</div></div>
+  <div class="bar" style="--c:var(--chore)"><div class="lab mono">fcf45dc</div><div class="track"><div class="fill" style="width:12.3%"></div></div><div class="val"><b>3</b> 行</div></div>
+  <div class="bar" style="--c:var(--chore)"><div class="lab mono">caa565f</div><div class="track"><div class="fill" style="width:9.8%"></div></div><div class="val"><b>2</b> 行</div></div>
+</div>
+
+<!-- ============ 5 类型与规范 ============ -->
+<h2><span class="n">04</span>类型分布与提交信息演变</h2>
+<p class="sub">类型分布说明这个仓库的实质：一半是写练习（feat），另一半是写文档和整理结构。</p>
+
+<div class="two">
+  <div class="card pad">
+    <div class="dist">
+      <i style="background:var(--feat);width:38.9%"></i>
+      <i style="background:var(--docs);width:22.2%"></i>
+      <i style="background:var(--refactor);width:16.7%"></i>
+      <i style="background:var(--chore);width:22.2%"></i>
+    </div>
+    <div class="legend">
+      <div><span class="dot" style="background:var(--feat)"></span>feat 功能<span class="n">7 次</span></div>
+      <div><span class="dot" style="background:var(--docs)"></span>docs 文档<span class="n">4 次</span></div>
+      <div><span class="dot" style="background:var(--refactor)"></span>refactor 重构<span class="n">3 次</span></div>
+      <div><span class="dot" style="background:var(--chore)"></span>chore 杂务<span class="n">4 次</span></div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:16px 0 0">
+      按行数看是另一种分布：docs 类提交贡献了 82598 行，占全部新增的 75%。仓库从“代码练习集”转向“代码加教程”。
+    </p>
+  </div>
+
+  <div class="card pad">
+    <div class="conv">
+      <h4>裸类型，无 scope</h4>
+      <div class="rng">09-07 至 09-21 · 8 次提交（第 1 至 7 次，加第 14 次）</div>
+      <code>docs: 添加了前端工程化学习仓库的 README 文档
+feat: 新增 01-vue-literal 字面量练习案例
+chore: 修改了 .gitignore 配置</code>
+      <div style="font-size:12.5px;color:var(--muted)">用“添加了 / 修改了”这类动词开头，读起来像操作记录。</div>
+    </div>
+    <div class="conv now">
+      <h4>带 scope，动宾结构</h4>
+      <div class="rng">第 8 次起 · 09-21 至今 · 10 次提交</div>
+      <code>chore(deps): 接入 Element Plus 组件库
+refactor(views): 视图组件统一迁入 src/views 目录
+docs(tutorial): 补齐 152 篇配套教程并按课程结构编号</code>
+      <div style="font-size:12.5px;color:var(--muted)">scope 用英文小写，说明改用动宾短句，一条提交能看出影响面。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 6 目录地图 ============ -->
+<h2><span class="n">05</span>目录现状</h2>
+<p class="sub">最后一次结构重构后的落地情况。标记“待填充”的目录只有 README，是课堂往里加练习的位置。</p>
+
+<div class="card tree">
+  <div class="row"><div class="p">docs/<span>配套教程，编号与 12 单元对应</span></div><div class="c">156 文件</div><div><span class="badge b-ok">已完成</span></div></div>
+  <div class="row"><div class="p">module-02-vue-core/<span>单元 4 至 6，含 practice-app 工程</span></div><div class="c">35 文件</div><div><span class="badge b-part">部分填充</span></div></div>
+  <div class="row"><div class="p">module-01-toolchain/<span>单元 1 至 3，含 vite-scaffold-demo</span></div><div class="c">17 文件</div><div><span class="badge b-part">部分填充</span></div></div>
+  <div class="row"><div class="p">cases/<span>10 个案例目录，各含 README 验收标准</span></div><div class="c">11 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+  <div class="row"><div class="p">module-03-components/<span>单元 7 至 8</span></div><div class="c">1 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+  <div class="row"><div class="p">module-04-architecture/<span>单元 9 至 10</span></div><div class="c">1 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+  <div class="row"><div class="p">campus-activity-admin/<span>综合项目</span></div><div class="c">1 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+  <div class="row"><div class="p">uniapp-port/<span>跨端拓展</span></div><div class="c">1 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+  <div class="row"><div class="p">templates/vue3-vite-starter/<span>工程模板</span></div><div class="c">1 文件</div><div><span class="badge b-wait">待填充</span></div></div>
+</div>
+
+<!-- ============ 7 里程碑 ============ -->
+<h2><span class="n">06</span>关键节点</h2>
+<div class="card ms">
+  <div class="item"><div class="when">09-07 15:40</div><div class="what"><b>a6c9e7a · 仓库起点</b><p>唯一一个初始提交，只有一份 README，此后全部是线性追加。</p></div></div>
+  <div class="item"><div class="when">09-07 16:34</div><div class="what"><b>03f6123 · 第一个可运行工程</b><p>15 个文件落地 02-vite-vue-demo，仓库从零散示例变成能跑的项目。</p></div></div>
+  <div class="item"><div class="when">09-21 17:41</div><div class="what"><b>fcf45dc · 引入 scope 写法</b><p>提交信息第一次带括号作用域，也是此后所有提交的统一格式雏形。</p></div></div>
+  <div class="item"><div class="when">09-21 17:42</div><div class="what"><b>ac482ed · 单次最多练习</b><p>13 个指令练习一次性提交，21733 行、16 个文件，练习阶段的峰值。</p></div></div>
+  <div class="item"><div class="when">10-12 14:06</div><div class="what"><b>287afa5 · 目录按课程单元重建</b><p>58 个文件从 01/02/03 编号迁到 module 结构。Git 把大部分识别为改名，所以删除行数与新增行数接近，历史没有断。</p></div></div>
+  <div class="item"><div class="when">10-12 14:22</div><div class="what"><b>5951397 · 教程拆分完成</b><p>157 个文件、78110 行一次提交，152 篇教程按单元编号落进 docs。当前 HEAD。</p></div></div>
+</div>
+
+<!-- ============ 8 命令 ============ -->
+<h2><span class="n">07</span>复现这张地图</h2>
+<p class="sub">地图里的每个数字都能用下面命令重新取一遍。</p>
+
+<pre class="cmd"><span class="c"># 主干：提交图与分支</span>
+git log --all --graph --oneline --decorate
+
+<span class="c"># 逐次提交的改动规模</span>
+git log --reverse --pretty=format:"%h %ad %s" --date=short --shortstat
+
+<span class="c"># 每次提交动了哪些目录（地图里“涉及目录”一列）</span>
+git log --reverse --pretty=format:"%h" --name-only | head -40
+
+<span class="c"># 类型分布</span>
+git log --pretty=format:"%s" | sed 's/(.*//' | cut -d: -f1 | sort | uniq -c | sort -rn
+
+<span class="c"># 累计变更行</span>
+git log --numstat --pretty=format:"" | awk 'NF==3{a+=$1;d+=$2} END{print "+" a, "-" d}'
+
+<span class="c"># 工作区状态（地图顶部第 6 张卡）</span>
+git status --short</pre>
+
+<div style="height:16px"></div>
+
+<pre class="graph"><b>git log --oneline --graph 原文（线性，无合并）</b>
+* 5951397  docs(tutorial): 补齐 152 篇配套教程并按课程结构编号   ← HEAD, origin/main
+* 287afa5  refactor(repo): 课程学习仓库重构
+* fe8db56  refactor(repo): 按课程 12 单元建立目录骨架
+* ebad90c  docs(repo): 重写仓库说明，按课程 12 单元组织导航
+* 3d6204b  docs: 新增三份 Vue 基础教学文档
+* ac482ed  feat(practice): 新增 13 个 Vue 常用指令的实用练习
+* 11af411  feat(practice): 新增朋友圈图片布局练习
+* c328c85  feat(practice): 新增学生名单多视图切换练习
+* 61a740f  refactor(views): 视图组件统一迁入 src/views 目录
+* d95bac5  chore(deps): 接入 Element Plus 组件库
+* fcf45dc  chore(git): 忽略 .workbuddy 本地工作数据目录
+* 4c63e5f  feat: Vue 模版语法、插值、属性绑定、动态样式等
+* 6ec961d  feat: 练习 vue 基础指令语法
+* 03f6123  feat: 02-vite-vue-demo vite创建vue3项目
+* 9af0799  feat: 新增 01-vue-literal 字面量练习案例
+* 32dca8d  chore: 修改了 .gitignore 配置
+* caa565f  chore: 添加了 .gitignore 配置
+* a6c9e7a  docs: 添加了前端工程化学习仓库的 README 文档</pre>
+
+<footer>
+  <span>数据取自本地仓库 <span class="mono">/Users/moqi/Desktop/frontend-learning</span></span>
+  <span>生成时间 2026-10-12 15:19</span>
+  <span>提交 18 · 文件 226 · 累计 +110111 −1276</span>
+</footer>
+
+</div>
+</body>
+</html>
