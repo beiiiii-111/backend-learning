@@ -29,6 +29,8 @@
         <module>12-test</module>
         <module>13-actuator</module>
         <module>14-deploy</module>
+        <module>15-toolkit</module>
+        <module>zhihu-api</module>
         <module>my-vue-app</module>
     </modules>
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.yixz.zhihu.mapper.SpecialMapper">
+
+    <sql id="Base_Column_List">
+        id, title, description, banner, is_following, followers_count, view_count, updated, category
+    </sql>
+
+    <select id="selectByCategory" resultType="top.yixz.zhihu.entity.Special">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_special
+        WHERE category = #{category}
+        ORDER BY updated DESC
+    </select>
+
+    <select id="selectByPage" resultType="top.yixz.zhihu.entity.Special">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_special
+        ORDER BY updated DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>
