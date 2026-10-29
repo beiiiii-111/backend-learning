@@ -1,0 +1,1355 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "15-toolkit · Hutool 工具库实战",
+    "description": "十二个 Hutool 案例的接口集合，可直接导入 Apifox。端口 8015，前缀 /toolkit。启动：mvn -pl 15-toolkit spring-boot:run",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8015",
+      "description": "本机 15-toolkit"
+    }
+  ],
+  "paths": {
+    "/toolkit/captcha": {
+      "get": {
+        "summary": "1 生成图形验证码",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "line"
+            },
+            "example": "line",
+            "description": "line / circle / shear / gif / math"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "captchaId": "e969cde3ddf24e72a51da044f1960de1",
+                    "image": "data:image/png;base64,iVBORw0K...",
+                    "expireSeconds": 60,
+                    "type": "line",
+                    "code": "zzzz"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/captcha/verify": {
+      "post": {
+        "summary": "1 校验验证码（成功后答案即失效）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "captchaId": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "captchaId": "e969cde3ddf24e72a51da044f1960de1",
+                "code": "zzzz"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": true,
+                  "message": "验证通过"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/create": {
+      "post": {
+        "summary": "2 创建扫码登录二维码",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "ticket": "4ef1d2479ac3409a977aecf00f98b8de",
+                    "content": "qrlogin:t=4ef1...",
+                    "image": "data:image/png;base64,iVBORw0K...",
+                    "expireSeconds": 120
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/status": {
+      "get": {
+        "summary": "2 查询扫码状态（WAITING/SCANNED/CONFIRMED/CANCELED）",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "4ef1d2479ac3409a977aecf00f98b8de"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "ticket": "4ef1d2479ac3409a977aecf00f98b8de",
+                    "state": "WAITING",
+                    "phone": null,
+                    "token": null
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/scan": {
+      "post": {
+        "summary": "2 手机端已扫（WAITING→SCANNED）",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "4ef1d2479ac3409a977aecf00f98b8de"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "ticket": "4ef1...",
+                    "state": "SCANNED"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/confirm": {
+      "post": {
+        "summary": "2 手机端确认（SCANNED→CONFIRMED，返回 JWT）",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "4ef1d2479ac3409a977aecf00f98b8de"
+          },
+          {
+            "name": "phone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "13800001111"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "state": "CONFIRMED",
+                    "token": "eyJhbGciOiJIUzI1NiJ9..."
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/cancel": {
+      "post": {
+        "summary": "2 取消扫码",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "4ef1d2479ac3409a977aecf00f98b8de"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "state": "CANCELED"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/qr-login/ascii": {
+      "get": {
+        "summary": "2 二维码字符画",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "4ef1d2479ac3409a977aecf00f98b8de"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "example": "█▀▀▀▀▀█ ..."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/poster": {
+      "post": {
+        "summary": "3 合成商品海报（返回 PNG，不传图用默认底图）",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "商品图，可选"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "秋季新品"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "2999.00"
+                  },
+                  "qrContent": {
+                    "type": "string",
+                    "example": "https://example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG 图片",
+            "content": {
+              "image/png": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/short-link": {
+      "post": {
+        "summary": "4 创建短链",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "ttlSeconds": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "url": "https://example.com/a/very/long/path?x=1&y=2",
+                "ttlSeconds": 604800
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "code": "fQq27s",
+                    "shortUrl": "http://127.0.0.1:8015/toolkit/s/fQq27s",
+                    "url": "https://example.com/a/very/long/path?x=1&y=2",
+                    "expireAt": 1793261000000
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/s/{code}": {
+      "get": {
+        "summary": "4 访问短链（302 跳原链）",
+        "description": "Apifox 默认会跟随重定向，看不到 302。到「项目设置 → 高级设置」关掉自动重定向，才能在响应头里看到 Location。",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "fQq27s"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "重定向到原链",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/short-link/{code}": {
+      "get": {
+        "summary": "4 查短链统计（点击数）",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "fQq27s"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "code": "fQq27s",
+                    "url": "https://example.com/...",
+                    "clicks": 1,
+                    "createdAt": 1792656000000,
+                    "expireAt": 1793261000000
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/excel/export": {
+      "get": {
+        "summary": "5 导出订单 Excel",
+        "responses": {
+          "200": {
+            "description": "xlsx 文件",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/excel/template": {
+      "get": {
+        "summary": "5 下载导入模板",
+        "responses": {
+          "200": {
+            "description": "xlsx 文件",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/excel/import": {
+      "post": {
+        "summary": "5 导入 Excel（逐行校验，失败的写成错误文件）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "xlsx（先跑导出或模板接口，把响应另存成文件）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "total": 10,
+                    "success": 10,
+                    "failed": 0,
+                    "errors": [],
+                    "errorFileUrl": null
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/excel/download/{fileName}": {
+      "get": {
+        "summary": "5 下载错误文件（文件名来自导入结果，含 .. 会被拒）",
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "import-error-4933db9e.xlsx"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "xlsx 文件",
+            "content": {
+              "application/octet-stream": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/chunk/init": {
+      "post": {
+        "summary": "6 初始化分片上传",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fileName": {
+                    "type": "string"
+                  },
+                  "totalChunks": {
+                    "type": "integer"
+                  },
+                  "md5": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "fileName": "big.bin",
+                "totalChunks": 3,
+                "md5": "2ee45b824acf3e0e28a2e3a79e8d5a12"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "uploadId": "e32c1f52354543b98101cb73eead678c",
+                    "chunkSize": 1048576,
+                    "totalChunks": 3,
+                    "uploaded": []
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/chunk/upload": {
+      "post": {
+        "summary": "6 上传单个分片（改 index 重复调用）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uploadId": {
+                    "type": "string",
+                    "example": "e32c1f52354543b98101cb73eead678c"
+                  },
+                  "index": {
+                    "type": "string",
+                    "example": "0"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "uploadId": "e32c...",
+                    "totalChunks": 3,
+                    "uploaded": [
+                      0
+                    ],
+                    "missing": [
+                      1,
+                      2
+                    ]
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/chunk/status": {
+      "get": {
+        "summary": "6 查已传分片",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "e32c1f52354543b98101cb73eead678c"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "uploadId": "e32c...",
+                    "totalChunks": 3,
+                    "uploaded": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "missing": []
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/chunk/merge": {
+      "post": {
+        "summary": "6 合并分片（uploadId 走 query，不是 body）",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "e32c1f52354543b98101cb73eead678c"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "fileId": "54a8fd53835b49f69e269d3641bf5dac",
+                    "fileName": "big.bin",
+                    "size": 2097156,
+                    "md5": "2ee45b824acf3e0e28a2e3a79e8d5a12",
+                    "downloadUrl": "/toolkit/chunk/download/54a8fd53835b49f69e269d3641bf5dac"
+                  },
+                  "message": "合并成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/chunk/download/{fileId}": {
+      "get": {
+        "summary": "6 下载合并结果（与源文件字节一致）",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "54a8fd53835b49f69e269d3641bf5dac"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/octet-stream": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/file/check": {
+      "post": {
+        "summary": "7 上传体检（读文件头，改了扩展名也能识破）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "originalName": "fake.png",
+                    "extension": "png",
+                    "realType": "",
+                    "size": 18,
+                    "md5": "46bbbe8aa98cc0714426e948474eaaf4",
+                    "allowed": false,
+                    "remark": "扩展名是 png，无法识别文件类型"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/file/compress": {
+      "post": {
+        "summary": "7 图片压缩（返回 PNG）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "maxWidth": {
+                    "type": "string",
+                    "example": "300"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG 图片",
+            "content": {
+              "image/png": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/file/zip": {
+      "post": {
+        "summary": "7 多文件打包（files 可重复添加）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "zip 包",
+            "content": {
+              "application/zip": {}
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/sign/demo": {
+      "post": {
+        "summary": "8 生成签名（把返回的四个值填到订单接口的头里）",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "appId": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "integer"
+                  },
+                  "nonce": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "body": "{\"orderNo\":\"SO1\"}"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "appId": "toolkit-demo",
+                    "timestamp": "1792551406",
+                    "nonce": "3en33rNk33D7",
+                    "body": "{\"orderNo\":\"SO1\"}",
+                    "canonical": "toolkit-demo\\n1792551406\\n3en33rNk33D7\\n{\"orderNo\":\"SO1\"}",
+                    "sign": "3f5b32909ba0db8839280da4f63749038c3f53277782095d5672b4819a778fbf"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/sign/order": {
+      "post": {
+        "summary": "8 受签名保护的订单接口",
+        "description": "X-App-Id / X-Timestamp / X-Nonce / X-Sign 四个头必填；规范串是 appId\\ntimestamp\\nnonce\\nbody（原始请求体字符串，改动一个空格都验不过）。建议用前置脚本自动生成，见模块 README。",
+        "parameters": [
+          {
+            "name": "X-App-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "toolkit-demo"
+          },
+          {
+            "name": "X-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1792551406"
+          },
+          {
+            "name": "X-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "3en33rNk33D7"
+          },
+          {
+            "name": "X-Sign",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "3f5b32909ba0db8839280da4f63749038c3f53277782095d5672b4819a778fbf"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "orderNo": "SO1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "accepted": true,
+                    "appId": "toolkit-demo",
+                    "requestBody": "{\"orderNo\":\"SO1\"}"
+                  },
+                  "message": "签名校验通过"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/customer": {
+      "post": {
+        "summary": "9 创建客户（手机号/身份证 AES 加密，密码 BCrypt）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "idCard": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "name": "张三",
+                "phone": "13800001234",
+                "idCard": "11010519491231002X",
+                "password": "abc123",
+                "level": "vip"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "id": "037b682880ba47ff95cb6904bea5ecf5",
+                    "name": "张三",
+                    "phone": "13800001234",
+                    "idCard": "11010519491231002X",
+                    "age": 76,
+                    "gender": "女",
+                    "level": "vip"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/customer/{id}": {
+      "get": {
+        "summary": "9 查询客户（默认脱敏，role=admin 出全码）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "037b682880ba47ff95cb6904bea5ecf5"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "user"
+            },
+            "example": "admin",
+            "description": "user / admin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "id": "037b...",
+                    "name": "张三",
+                    "phone": "138****1234",
+                    "idCard": "110105********002X",
+                    "age": 76,
+                    "gender": "女",
+                    "level": "vip"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/customer/{id}/raw": {
+      "get": {
+        "summary": "9 看存储层（密文 + 哈希）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "037b682880ba47ff95cb6904bea5ecf5"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "phoneEncrypted": "8HIEEukWqDync5zv/MF11g==",
+                    "idCardEncrypted": "V5X8EEXzzXyte0zwUv9+pkCPa9EMOrfVIcJTi+GWU00=",
+                    "passwordHash": "$2a$10$xBXMpl5d1w/.zbZBuMOz..."
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/customer/{id}/verify-password": {
+      "post": {
+        "summary": "9 校验密码（BCrypt checkpw）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "037b682880ba47ff95cb6904bea5ecf5"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "password": "abc123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": true,
+                  "message": "密码正确"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/system": {
+      "get": {
+        "summary": "10 系统面板数据（CPU/内存/磁盘/JVM/OS）",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "cpu": {
+                      "model": "Intel(R) Core(TM) i7",
+                      "cores": 28,
+                      "usage": 0.12
+                    },
+                    "memory": {
+                      "total": 34000000000,
+                      "used": 12000000000,
+                      "usage": 0.35
+                    },
+                    "jvm": {
+                      "heapUsed": 120000000,
+                      "heapMax": 4000000000,
+                      "threads": 42,
+                      "javaVersion": "21.0.4",
+                      "uptimeSeconds": 60
+                    }
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/inspect": {
+      "post": {
+        "summary": "11 接口巡检（并发探测一组地址）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "urls": {
+                    "type": "array"
+                  }
+                }
+              },
+              "example": {
+                "urls": [
+                  "http://127.0.0.1:8015/toolkit/system",
+                  "http://127.0.0.1:8015/toolkit/nothing",
+                  "http://127.0.0.1:9/none",
+                  "not-a-url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "total": 4,
+                    "success": 1,
+                    "failed": 3,
+                    "avgCostMs": 262,
+                    "results": [
+                      {
+                        "url": "http://127.0.0.1:8015/toolkit/system",
+                        "status": 200,
+                        "costMs": 1039,
+                        "ok": true,
+                        "error": null
+                      }
+                    ]
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/text/extract": {
+      "post": {
+        "summary": "12 提取并脱敏手机号/邮箱/身份证/IP/URL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "text": "联系 13800001234 或 service@example.com，身份证 11010519491231002X，图片 http://cdn.example.com/a/b.png?x=1，IP 192.168.1.100。"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "phones": [
+                      "13800001234"
+                    ],
+                    "emails": [
+                      "service@example.com"
+                    ],
+                    "ips": [
+                      "192.168.1.100"
+                    ],
+                    "urls": [
+                      "http://cdn.example.com/a/b.png?x=1"
+                    ],
+                    "idCards": [
+                      "11010519491231002X"
+                    ],
+                    "maskedText": "联系 138****1234 或 s******@example.com，身份证 110105********002X"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/toolkit/text/sensitive": {
+      "post": {
+        "summary": "12 敏感词过滤（DFA，返回命中词、打码文本、高亮文本）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "text": "内容涉及赌博和诈骗，代开发票请绕行。"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 200,
+                  "data": {
+                    "hits": [
+                      "赌博",
+                      "诈骗",
+                      "代开发票"
+                    ],
+                    "filtered": "内容涉及**和**，****请绕行。",
+                    "highlighted": "内容涉及<mark>赌博</mark>和<mark>诈骗</mark>，<mark>代开发票</mark>请绕行。"
+                  },
+                  "message": "操作成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

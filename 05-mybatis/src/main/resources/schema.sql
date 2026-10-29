@@ -45,9 +45,49 @@ CREATE TABLE t_course
     credit      DECIMAL(3, 1) NOT NULL DEFAULT 1.0 COMMENT '学分，精确小数用定点数',
     create_time DATETIME     NOT NULL COMMENT '创建时间，自动填充',
     update_time DATETIME     NOT NULL COMMENT '更新时间，自动填充',
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    -- 案例要求课程名唯一（教程 DDL 里有 uk_name）。
+    -- 注意：本表沿用课后进阶 1 的结构，保留了 create_time / update_time，
+    -- 因为 CourseController 的新增接口依赖这两列的自动填充
+    UNIQUE KEY uk_name (name)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='课程表';
+
+-- ==================== 案例：学生表 ====================
+DROP TABLE IF EXISTS t_student;
+
+CREATE TABLE t_student
+(
+    id          BIGINT UNSIGNED AUTO_INCREMENT COMMENT '主键',
+    name        VARCHAR(32)        NOT NULL COMMENT '姓名',
+    gender      TINYINT            NOT NULL DEFAULT 0 COMMENT '性别，0 未知 / 1 男 / 2 女',
+    age         TINYINT UNSIGNED COMMENT '年龄',
+    class_name  VARCHAR(32)        NOT NULL COMMENT '班级',
+    create_time DATETIME           NOT NULL COMMENT '创建时间，自动填充',
+    update_time DATETIME           NOT NULL COMMENT '更新时间，自动填充',
+    deleted     TINYINT            NOT NULL DEFAULT 0 COMMENT '逻辑删除，0 未删除 / 1 已删除',
+    PRIMARY KEY (id),
+    KEY idx_class_name (class_name)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='学生表';
+
+-- ==================== 案例：成绩表（中间表） ====================
+DROP TABLE IF EXISTS t_score;
+
+CREATE TABLE t_score
+(
+    id          BIGINT UNSIGNED AUTO_INCREMENT COMMENT '主键',
+    student_id  BIGINT UNSIGNED NOT NULL COMMENT '学生 id，对应 t_student.id',
+    course_id   BIGINT UNSIGNED NOT NULL COMMENT '课程 id，对应 t_course.id',
+    score       DECIMAL(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '分数',
+    create_time DATETIME        NOT NULL COMMENT '创建时间，自动填充',
+    update_time DATETIME        NOT NULL COMMENT '更新时间，自动填充',
+    deleted     TINYINT         NOT NULL DEFAULT 0 COMMENT '逻辑删除，0 未删除 / 1 已删除',
+    PRIMARY KEY (id),
+    KEY idx_student_id (student_id),
+    KEY idx_course_id (course_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='成绩表';
 
 -- ==================== 课后挑战：商品表 + 订单表 ====================
 DROP TABLE IF EXISTS t_product;

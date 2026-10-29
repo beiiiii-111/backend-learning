@@ -34,6 +34,22 @@
             <version>8.3.0</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- 分页插件 PaginationInnerInterceptor 在 3.5.17 里被拆到了这个独立模块，
+             只引 starter 的话编译期找不到这个类 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.17</version>
+        </dependency>
+
+        <!-- springdoc：自动生成 OpenAPI 3 文档，供 Apifox 导入接口。
+             Spring Boot 4 必须用它家的 3.x 版本，2.x 只支持 Boot 3 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.1.1</version>
+        </dependency>
     </dependencies>
 
     <!-- 课后进阶 2：Druid 只在 druid profile 下引入。
