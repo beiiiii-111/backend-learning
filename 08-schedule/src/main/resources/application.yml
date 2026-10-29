@@ -1,0 +1,49 @@
+server:
+  port: 8008
+
+spring:
+  application:
+    name: 08-schedule 定时任务模块
+
+  # ============ 邮件发送配置（QQ 邮箱） ============
+  # 授权码要在 QQ 邮箱「设置 → 账户 → POP3/SMTP 服务」里开启后获取，不是登录密码！
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# ============ 和风天气配置 ============
+weather:
+  # 定时规则：秒 分 时 日 月 周，这里 = 每天早上 08:30:00 推送
+  #   想马上测试：改成 "0 * * * * ?" 每整分钟发一次，或写眼前一两分钟后的时刻
+  cron: "0 30 8 * * ?"
+  api:
+    # 和风天气控制台 → 项目管理 里拿，KEY 用环境变量注入，别提交到公开仓库
+    key: ${WEATHER_API_KEY:}
+    # 城市 ID：和风 geo/v2/city/lookup 查出来的 LocationID
+    # 常用备查：南京 101190101、扬州 101190601、北京 101010100、上海 101020100
+    city: 101190601
+    # 只用来拼邮件标题，不影响接口查询
+    city-name: 扬州
+    # 自己的专属 API Host（控制台「项目管理」里有），拼上接口路径；可用 WEATHER_API_HOST 覆盖
+    url: ${WEATHER_API_HOST:https://n957rp5nhu.re.qweatherapi.com/v7/weather/3d}
+  mail:
+    # 收件人，多个用英文逗号分隔，第一个建议是发件邮箱自己
+    recipients: ${WEATHER_MAIL_RECIPIENTS:}
+    subject-prefix: "【今日天气】"
+
+# ============ 上一节课的两个 cron 示例，保留备用 ============
+schedule:
+  fixed-time:
+    cron: "0 * * * * ?"
+  period:
+    cron: "*/3 * * * * ?"

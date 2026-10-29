@@ -33,3 +33,6 @@ docs/.vitepress/.temp/
 
 # 前端工程 my-vue-app 的打包产物
 my-vue-app/dist/
+
+# IDE
+.idea/
