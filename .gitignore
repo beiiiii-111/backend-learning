@@ -36,3 +36,6 @@ my-vue-app/dist/
 
 # IDE
 .idea/
+
+# 阿里云 OSS 密钥（10-file 模块），真实密钥不入库
+10-file/src/main/resources/aliyun-oss.properties
