@@ -22,11 +22,13 @@ public class OssServiceImpl implements OssService {
     @Resource
     private OssConfig ossConfig;
 
+    /** 允许上传的图片后缀，之外的直接拦截 */
     private static final Map<String, String> CONTENT_TYPES = Map.of(
             ".jpg", "image/jpeg",
             ".jpeg", "image/jpeg",
             ".png", "image/png",
             ".gif", "image/gif",
+            ".bmp", "image/bmp",
             ".webp", "image/webp"
     );
 
@@ -42,8 +44,12 @@ public class OssServiceImpl implements OssService {
             return null;
         }
 
-        // 新文件名 = UUID + 原始后缀，防止重名覆盖
+        // 拦截非图片类型
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (!CONTENT_TYPES.containsKey(suffix.toLowerCase())) {
+            log.warn("已拦截非图片文件：{}", originalFilename);
+            return null;
+        }
         String newFileName = UUID.randomUUID() + suffix;
         String objectName = ossConfig.getDir() + newFileName;
 
