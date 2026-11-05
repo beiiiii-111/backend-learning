@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # H2 文件数据库：无需安装 MySQL，首次启动自动建库建表并写入初始数据
+    url: jdbc:h2:file:./data/campus;MODE=MySQL;NON_KEYWORDS=USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always        # 每次启动执行 schema/data（脚本均带 IF NOT EXISTS / MERGE，幂等）
+  jpa:
+    hibernate:
+      ddl-auto: none      # 表结构统一由 schema.sql 管理
+    open-in-view: false
+  h2:
+    console:
+      enabled: true       # http://localhost:8080/h2-console 可查看数据
+      path: /h2-console
+
+app:
+  jwt:
+    # 课程演示用固定密钥；生产环境应改为环境变量注入
+    secret: group6-campus-activity-demo-secret-key-2026
+    expire-hours: 2
