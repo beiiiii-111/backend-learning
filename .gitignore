@@ -34,6 +34,9 @@ docs/.vitepress/.temp/
 # 前端工程 my-vue-app 的打包产物
 my-vue-app/dist/
 
+# 09-security 演示页面的打包产物（源码在 09-security/web/src）
+09-security/web/dist/
+
 # IDE
 .idea/
 
