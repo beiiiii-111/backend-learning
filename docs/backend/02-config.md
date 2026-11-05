@@ -1,12 +1,14 @@
 # 02 · 配置管理 —— @Value、配置校验与 Apifox 联调小结
 
 > - 难度：入门 → 进阶
-> - 前置模块：[01-quickstart](./01-quickstart.md)
+> - 前置条件：[01-quickstart](./01-quickstart.md)
 > - 预计时长：约 60 分钟
 > - 对应代码：[02-config](https://github.com/beiiiii-111/backend-learning/tree/main/02-config)
 > - 环境：JDK 21 / Spring Boot 4.1.1 / 端口 9090
 
-## 1. 本节导读
+---
+
+## 0. 先看结果
 
 这一节把「配置」这件事从能用到用对走了一遍，核心收获三件事：
 
@@ -16,13 +18,25 @@
 
 最后一节有一份**真实踩坑清单**，记录了本次实操中实际遇到并解决的 7 个错误，每一个都附了报错特征与修复方式。
 
+### 这一节的路线
+
+| 小节 | 内容 |
+| --- | --- |
+| 1 | `@Value` 用法全景：六种写法、示例代码、配置文件 |
+| 2 | `@Value` 还是 `@ConfigurationProperties` |
+| 3 | 配置校验实践 |
+| 4 | Apifox 联调心得 |
+| 5 | 运行与实测 |
+| 6 | 常见问题：7 个踩坑记录 |
+| 7 | 小结 |
+
 ---
 
-## 2. `@Value` 用法全景
+## 1. `@Value` 用法全景
 
 `@Value` 的作用是把配置值注入到字段上。下面是 `ConfigController` 里用到的全部六种写法。
 
-### 2.1 六种写法对照
+### 1.1 六种写法对照
 
 | 用法 | 写法 | 说明 |
 | --- | --- | --- |
@@ -35,7 +49,7 @@
 
 > **默认值是最容易被忽略但最实用的一个。** `${key:默认值}` 在配置项可能缺失时（比如新增字段、灰度配置）能避免应用直接起不来。
 
-### 2.2 完整示例代码
+### 1.2 完整示例代码
 
 ```java
 @RestController
@@ -78,7 +92,7 @@ public class ConfigController {
 }
 ```
 
-### 2.3 对应的配置文件
+### 1.3 对应的配置文件
 
 ```yaml
 server:
@@ -111,7 +125,7 @@ student:
 
 ---
 
-## 3. `@Value` 还是 `@ConfigurationProperties`？
+## 2. `@Value` 还是 `@ConfigurationProperties`？
 
 这是配置管理最核心的一个选型问题。
 
@@ -126,7 +140,7 @@ student:
 
 **结论**：零散取值用 `@Value`，成组的业务配置一律用 `@ConfigurationProperties`。本项目两种都用，正是为了对比体会。
 
-### 嵌套结构示例
+### 2.1 嵌套结构示例
 
 `StudentProperties` 展示了复杂配置的绑定方式：
 
@@ -178,9 +192,9 @@ student:
 
 ---
 
-## 4. 配置校验实践
+## 3. 配置校验实践
 
-### 4.1 核心思路
+### 3.1 核心思路
 
 **让错误的配置在启动阶段就炸掉，而不是等到运行时才发现。**
 
@@ -218,7 +232,7 @@ public class AppProperties {
 }
 ```
 
-### 4.2 常用校验注解
+### 3.2 常用校验注解
 
 | 注解 | 作用 | 示例 |
 | --- | --- | --- |
@@ -229,7 +243,7 @@ public class AppProperties {
 | `@Email` | 邮箱格式 | 邮箱 |
 | `@Pattern` | 正则匹配 | 手机号 `^1[3-9]\d{9}$` |
 
-### 4.3 校验失败长什么样
+### 3.3 校验失败长什么样
 
 配置写错时，应用**启动失败**，控制台给出结构化报错：
 
@@ -253,7 +267,7 @@ Failed to bind properties under 'app' to AppProperties:
 
 > **关键认知**：这类错误发生在**应用启动前**，接口还没起来，所以**无法通过接口返回给前端**。它是 fail-fast 设计——宁可起不来，也不要带着错误配置跑。
 
-### 4.4 依赖别漏
+### 3.4 依赖别漏
 
 校验需要 `spring-boot-starter-validation`：
 
@@ -268,22 +282,22 @@ Failed to bind properties under 'app' to AppProperties:
 
 ---
 
-## 5. Apifox 联调心得
+## 4. Apifox 联调心得
 
-### 5.1 工作流
+### 4.1 工作流
 
 1. IDEA 装 **Apifox Helper** 插件
 2. 在 Apifox 生成访问令牌（账号设置 → API 访问令牌）
 3. 插件里填入 Token，绑定目标项目
 4. 项目右键 → **Upload to Apifox**，插件自动扫描 `@RestController` 生成接口文档
 
-### 5.2 怎么判断"上传成功了"
+### 4.2 怎么判断"上传成功了"
 
 **看 Apifox 左侧接口目录有没有出现你的 Controller**，比如 `ConfigController (5)`、`StudentController (1)`。
 
 **不要**把 IDEA 控制台的 `退出代码为 0` 当作成功标志——那只代表本地扫描跑完了，不代表数据推到了 Apifox。日志里 `Scan endpoints from: xxxController` 也只是"扫描到"，不是"已上传"。
 
-### 5.3 最常见的"连不上"：ECONNREFUSED
+### 4.3 最常见的"连不上"：ECONNREFUSED
 
 ```
 请求发生错误
@@ -300,7 +314,7 @@ connect ECONNREFUSED 127.0.0.1:9090
 2. 控制台有没有 `Tomcat started on port(s): 9090`？
 3. 如果端口不对，检查 `application.yml` 的 `server.port`
 
-### 5.4 排查 Apifox 客户端本身
+### 4.4 排查 Apifox 客户端本身
 
 如果怀疑是插件/客户端的问题，按这个顺序查：
 
@@ -322,7 +336,26 @@ netstat -ano | grep LISTENING | grep 4523
 
 ---
 
-## 6. 踩坑清单（本次实战真实记录）
+## 5. 运行与实测
+
+应用启动后，用浏览器或 Apifox 依次访问，确认每个功能点：
+
+| 接口 | 预期结果 | 验证了什么 |
+| --- | --- | --- |
+| `GET /config/basic` | `服务器端口是：9090，应用名称是：02-配置管理` | `@Value` 基础注入 |
+| `GET /config/my` | `我的姓名是：张心怡，职业是：学生` | 自定义配置 + 链式引用 |
+| `GET /config/value` | 占位符/默认值/随机 UUID/随机整数/SpEL 成年 | 默认值、随机值、SpEL |
+| `GET /config/env` | `当前环境：prod，生产环境；Profile Bean：我是 Prod 环境专属的 Bean` | 多环境 + `@Profile` |
+| `GET /config/app` | 返回含 name/author/port/maxCount/email/phone/startTime 的 JSON | `@ConfigurationProperties` + 校验 |
+| `GET /student/info` | 返回含 hobbies/scores/address/courses 的 JSON | 嵌套结构绑定 |
+
+**多环境验证**：把 `spring.profiles.active` 分别改成 `dev` 和 `prod` 重启，`/config/env` 应该返回不同的环境描述和不同的 Profile Bean。这是检验 profile 配置是否真正生效最直接的方式。
+
+---
+
+## 6. 常见问题
+
+### 6.1 踩坑清单（本次实战真实记录）
 
 这些是本次实操中**实际遇到并解决**的错误，按发生顺序排列：
 
@@ -336,7 +369,7 @@ netstat -ano | grep LISTENING | grep 4523
 | 6 | `端口号不能大于65535` / `手机号格式不正确` | `app.port: 86820` 超限、`app.phone` 为空 | 改成合法值，校验通过才能启动 |
 | 7 | Apifox `ECONNREFUSED 127.0.0.1:9090` | Spring Boot 应用没启动（当时正因上面的错误起不来） | 修完配置后启动应用 |
 
-### 几个值得单独强调的教训
+### 6.2 几个值得单独强调的教训
 
 **① 方法名对不上时，`@Override` 会失效**
 
@@ -357,24 +390,7 @@ netstat -ano | grep LISTENING | grep 4523
 
 ---
 
-## 7. 验证清单
-
-应用启动后，用浏览器或 Apifox 依次访问，确认每个功能点：
-
-| 接口 | 预期结果 | 验证了什么 |
-| --- | --- | --- |
-| `GET /config/basic` | `服务器端口是：9090，应用名称是：02-配置管理` | `@Value` 基础注入 |
-| `GET /config/my` | `我的姓名是：张心怡，职业是：学生` | 自定义配置 + 链式引用 |
-| `GET /config/value` | 占位符/默认值/随机 UUID/随机整数/SpEL 成年 | 默认值、随机值、SpEL |
-| `GET /config/env` | `当前环境：prod，生产环境；Profile Bean：我是 Prod 环境专属的 Bean` | 多环境 + `@Profile` |
-| `GET /config/app` | 返回含 name/author/port/maxCount/email/phone/startTime 的 JSON | `@ConfigurationProperties` + 校验 |
-| `GET /student/info` | 返回含 hobbies/scores/address/courses 的 JSON | 嵌套结构绑定 |
-
-**多环境验证**：把 `spring.profiles.active` 分别改成 `dev` 和 `prod` 重启，`/config/env` 应该返回不同的环境描述和不同的 Profile Bean。这是检验 profile 配置是否真正生效最直接的方式。
-
----
-
-## 8. 小结
+## 7. 小结
 
 这一节最有价值的三点认知：
 

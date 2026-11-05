@@ -1,11 +1,13 @@
 # 01 · 快速入门 —— 从零启动第一个 Spring Boot 应用
 
 > - 难度：入门
-> - 前置模块：无
+> - 前置条件：无
 > - 预计时长：约 30 分钟
 > - 对应代码：[01-quickstart](https://github.com/beiiiii-111/backend-learning/tree/main/01-quickstart)
 
-## 1. 本节导读
+---
+
+## 0. 先看结果
 
 学完本节，你应该能独立完成三件事：
 
@@ -15,11 +17,28 @@
 
 **前置知识**：会一点 Java 语法（类、方法、包）即可，不要求会 Spring。
 
+### 这一节的路线
+
+| 小节 | 内容 |
+| --- | --- |
+| 1 | 概念铺垫：Spring Boot、REST、容器与注入 |
+| 2 | 准备环境：JDK、Maven、仓库结构 |
+| 3 | 创建模块：写模块 POM 并编译通过 |
+| 4 | 写启动类 |
+| 5 | 写实体类 User |
+| 6 | 写控制器 UserController |
+| 7 | 配置端口 |
+| 8 | 完整代码与目录结构 |
+| 9 | 运行与实测 |
+| 10 | 常见问题 |
+| 11 | 练习 |
+| 12 | 小结 |
+
 ---
 
-## 2. 概念铺垫
+## 1. 概念铺垫
 
-### 2.1 为什么需要 Spring Boot
+### 1.1 为什么需要 Spring Boot
 
 纯 Servlet 时代起一个 Web 服务要干这些事：装 Tomcat、写 `web.xml`、手动管理几十个 jar 的版本兼容性。Spring Boot 的核心主张是**「约定优于配置」**：
 
@@ -27,7 +46,7 @@
 - **自动装配**：根据 classpath 上有什么依赖，自动把该配的组件配好（引入 web 依赖 → 自动配好 Tomcat + Spring MVC + JSON 转换器）；
 - **依赖管家**：`spring-boot-starter-parent` 锁定了几百个常用库的版本，你写依赖不用写 `<version>`，版本冲突的概率大幅下降。
 
-### 2.2 什么是 REST 接口
+### 1.2 什么是 REST 接口
 
 浏览器或 curl 访问 `http://localhost:8888/user/info`，服务器返回一段 JSON，这就是一个 REST 接口。它的核心是「**用 URL 定位资源，用 HTTP 方法表达操作**」：
 
@@ -40,7 +59,7 @@
 
 本节只用 GET —— 因为它不需要请求体，用浏览器就能直接验证，最适合建立第一个正反馈。
 
-### 2.3 三个绕不开的词：容器、Bean、注入
+### 1.3 三个绕不开的词：容器、Bean、注入
 
 这三个词后面每个模块都会出现，先建立印象：
 
@@ -63,7 +82,7 @@ public class UserController {
 
 ---
 
-## 3. 环境准备
+## 2. 准备环境
 
 | 项目 | 版本 | 说明 |
 | --- | --- | --- |
@@ -78,13 +97,15 @@ public class UserController {
 
 ---
 
-## 4. 动手实战
+## 3. 创建模块
 
 我们从零搭出 `01-quickstart`，共 5 步。
 
-### 步骤 1：建模块骨架
+### 3.1 目标
 
-目标：让 Maven 认识这个子模块。
+让 Maven 认识这个子模块。
+
+### 3.2 完整代码
 
 `01-quickstart/pom.xml`：
 
@@ -145,18 +166,26 @@ public class UserController {
 </project>
 ```
 
-讲解：
+### 3.3 讲解
 
 - `<parent>` 指向 `spring-boot-starter-parent`，由此获得依赖版本管理和默认插件配置，所以下面的依赖**都不用写 `<version>`**；
 - `spring-boot-starter-web` 是一个「starter 聚合包」，一次性带来 Spring MVC + 内嵌 Tomcat + Jackson（JSON 库）；
 - `<optional>true</optional>` 表示 Lombok 只在本模块编译期生效，不会传递给依赖本模块的其他模块；
 - `spring-boot-maven-plugin` 提供 `spring-boot:run` 和打成可执行 fat jar 的能力。
 
-验证：在 `01-quickstart` 目录下执行 `mvn compile`，出现 `BUILD SUCCESS` 即通过。
+### 3.4 验证
 
-### 步骤 2：写启动类
+在 `01-quickstart` 目录下执行 `mvn compile`，出现 `BUILD SUCCESS` 即通过。
 
-目标：提供一个能启动整个应用的入口。
+---
+
+## 4. 写启动类
+
+### 4.1 目标
+
+提供一个能启动整个应用的入口。
+
+### 4.2 完整代码
 
 `src/main/java/top/yixz/config/quickstart/QuickStartApplication.java`：
 
@@ -179,7 +208,7 @@ public class QuickStartApplication {
 }
 ```
 
-讲解：
+### 4.3 讲解
 
 - `@SpringBootApplication` 是**组合注解**，等于同时开启三件事：
   - `@Configuration`：本类可作为配置类，`@Bean` 方法可在此声明；
@@ -189,9 +218,15 @@ public class QuickStartApplication {
 
 > ⚠️ **最容易踩的坑**：启动类必须放在**业务包的最外层**。本例中启动类在 `top.yixz.config.quickstart`，那么只有 `top.yixz.config.quickstart.*` 下的类会被扫描到（所以 `controller`、`entity` 能被识别）。如果把它放到 `top.yixz.config.quickstart.app`，`controller` 包就扫不到了，接口会 404。
 
-### 步骤 3：写实体类 User
+---
 
-目标：定义一个「用户」数据模型，用 Lombok 省掉样板代码。
+## 5. 写实体类 User
+
+### 5.1 目标
+
+定义一个「用户」数据模型，用 Lombok 省掉样板代码。
+
+### 5.2 完整代码
 
 `src/main/java/top/yixz/config/quickstart/entity/User.java`：
 
@@ -219,7 +254,7 @@ public class User {
 }
 ```
 
-讲解：
+### 5.3 讲解
 
 - `@Data`：编译期自动生成 getter / setter / `toString` / `equals` / `hashCode`；
 - `@NoArgsConstructor` / `@AllArgsConstructor`：生成无参构造器和全参构造器。代码里的 `new User(1000L, "张三", LocalDate.of(2000, 2, 4))` 用的就是全参构造器；
@@ -228,9 +263,15 @@ public class User {
 
 > Lombok 是**编译期**生效的：注解处理器在 javac 阶段就把方法写进 class 文件了，所以你不用在 IDE 里看到那些 getter，但运行时确实存在。IDEA 需要安装 Lombok 插件并开启 Annotation Processing，否则编辑器会飘红（不影响命令行编译）。
 
-### 步骤 4：写控制器 UserController
+---
 
-目标：暴露两个 GET 接口。
+## 6. 写控制器 UserController
+
+### 6.1 目标
+
+暴露两个 GET 接口。
+
+### 6.2 完整代码
 
 `src/main/java/top/yixz/config/quickstart/controller/UserController.java`：
 
@@ -280,7 +321,7 @@ public class UserController {
 }
 ```
 
-讲解：
+### 6.3 讲解
 
 - `@RestController` = `@Controller` + `@ResponseBody`，含义是「方法返回值直接写进响应体」，而不是返回一个视图名去跳转页面；
 - `@RequestMapping("/user")` 是**类级前缀**，`@GetMapping("/info")` 是**方法级子路径**，拼接后就是 `GET /user/info`。把公共前缀提到类上，是必须养成的习惯；
@@ -307,9 +348,15 @@ Jackson 把 User 序列化成 JSON 写入响应体
 
 > **规范点**：对外暴露的接口方法必须是 `public`。Spring 虽然能通过反射调用私有方法，但这违反 Java 与 Spring 的约定，也会影响代理和 AOP（后面的模块会遇到）。
 
-### 步骤 5：配置端口
+---
 
-目标：让应用监听 8888 端口。
+## 7. 配置端口
+
+### 7.1 目标
+
+让应用监听 8888 端口。
+
+### 7.2 完整代码
 
 `src/main/resources/application.yml`：
 
@@ -318,7 +365,7 @@ server:
   port: 8888
 ```
 
-讲解：
+### 7.3 讲解
 
 - Spring Boot 默认端口 8080，这里显式改为 8888；
 - 用 `application.yml` 而非 `application.properties`：`yml` 层级更清晰，是当前主流选择；
@@ -326,7 +373,7 @@ server:
 
 ---
 
-## 5. 完整代码与目录结构
+## 8. 完整代码与目录结构
 
 ```
 01-quickstart
@@ -349,7 +396,7 @@ server:
 
 ---
 
-## 6. 运行与验证
+## 9. 运行与实测
 
 在 **`01-quickstart` 目录**下执行（本模块未继承仓库根 POM，建议在模块内运行）：
 
@@ -385,7 +432,7 @@ curl http://localhost:8888/user/list
 
 ---
 
-## 7. 常见问题与避坑
+## 10. 常见问题
 
 | 现象 | 原因 | 解决 |
 | --- | --- | --- |
@@ -399,9 +446,9 @@ curl http://localhost:8888/user/list
 
 ---
 
-## 8. 练习
+## 11. 练习
 
-### 8.1 随堂练习（约 10 分钟）
+### 11.1 随堂练习（约 10 分钟）
 
 > 跟着做即可，做完立刻用 curl 验证，追求「当场跑通」。
 
@@ -411,7 +458,7 @@ curl http://localhost:8888/user/list
 | 2 | 新增 `GET /user/hello?name=张三`，用 `@RequestParam` 接收，返回 `hello, 张三` | 带参访问返回正确拼接 |
 | 3 | 把端口改成 8889，重启验证 | 旧端口不通、新端口通 |
 
-### 8.2 课后练习
+### 11.2 课后练习
 
 - **基础**：给 `User` 增加 `email`、`phone` 两个字段，并让 `/user/info` 和 `/user/list` 都完整返回。
 - **进阶**：实现 `GET /user/{id}`，用 `@PathVariable` 按 id 返回对应用户（提示：`new User(id, ...)`）。
@@ -421,7 +468,9 @@ curl http://localhost:8888/user/list
 
 ---
 
-## 9. 小结与知识地图
+## 12. 小结
+
+### 12.1 知识地图
 
 | 概念 | 一句话回顾 |
 | --- | --- |
@@ -432,11 +481,7 @@ curl http://localhost:8888/user/list
 | 路径拼接 | 类级 `@RequestMapping` + 方法级 `@GetMapping` |
 | 实体类 + Lombok | `@Data` 省样板代码，属性用包装类型，日期用 `LocalDate` |
 
-下一节 [02-config](./02-config.md) 会讲配置读取，同时正式引入**依赖注入** —— 控制器将不再 `new` 对象，而是让 Spring 注入进来。
-
----
-
-## 10. 本模块代码现状检查（待整理项）
+### 12.2 本模块代码现状检查（待整理项）
 
 读代码时发现的几处不一致，属于真实工程里常见的「历史遗留」，建议后续统一。它们不影响本节运行，但值得你现在就意识到：
 
@@ -449,6 +494,8 @@ curl http://localhost:8888/user/list
 | 5 | 未引入 `spring-boot-devtools` | 改代码需手动重启 | 开发期可加上，生产不引入 |
 
 > 这五条本身就是很好的一次练习：**先让代码跑起来，再回头收拾结构** —— 这是所有真实项目的常态。
+
+下一篇 [02-config](./02-config.md) 会讲配置读取，同时正式引入**依赖注入** —— 控制器将不再 `new` 对象，而是让 Spring 注入进来。
 
 ---
 
