@@ -1,0 +1,27 @@
+server:
+  port: 8013
+
+spring:
+  application:
+    name: 13-actuator 应用监控练习
+
+# ============ Actuator 配置 ============
+management:
+  endpoints:
+    web:
+      exposure:
+        # 默认只暴露 health；练习环境放开常用的四个
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always        # 显示各健康指标的明细
+      show-components: always
+  info:
+    env:
+      enabled: true               # 把 application.yml 里 info.* 暴露到 /actuator/info
+
+info:
+  app:
+    name: 13-actuator 应用监控练习
+    version: 1.0.0
+    author: zhangxinyi
