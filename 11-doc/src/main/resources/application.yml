@@ -1,0 +1,20 @@
+server:
+  port: 8011
+
+spring:
+  application:
+    name: 11-doc 接口文档模块
+
+# ============ springdoc 配置 ============
+springdoc:
+  api-docs:
+    # OpenAPI JSON 的路径，默认 /v3/api-docs
+    path: /v3/api-docs
+  swagger-ui:
+    # Swagger UI 页面路径，默认 /swagger-ui/index.html
+    path: /swagger-ui.html
+    # 按类上的 @Tag 排序展示
+    tags-sorter: alpha
+    operations-sorter: alpha
+  # 生产环境建议设为 false 关闭文档暴露
+  api-docs.enabled: true
